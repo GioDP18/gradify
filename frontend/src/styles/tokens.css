@@ -1,0 +1,114 @@
+/*
+ * Design tokens — Gradify (EVSU Grading System).
+ *
+ * Palette from the Gradify logo: EVSU maroon, a deep oxblood for the navigation rail, torch gold
+ * as the accent, on a cool mauve-grey canvas. Gold is never the sole indicator of state (too
+ * light for text on white).
+ *
+ * The 1.0–5.0 grade is the product's signature: every grade is drawn as a chip coloured on a
+ * band ramp (excellent → failing), so a column of grades reads at a glance.
+ *
+ * Type: Bricolage Grotesque for headings and figures, Hanken Grotesk for interface text.
+ * Numbers are tabular so score columns line up.
+ */
+:root {
+  /* Brand */
+  --g-maroon: #8a1c22;
+  --g-maroon-hover: #74161b;
+  --g-maroon-deep: #5e0f14;
+  --g-maroon-tint: #f8ecee;
+  --g-oxblood: #3a0b11;
+  --g-oxblood-2: #4c1218;
+  --g-gold: #e8a11a;
+  --g-gold-soft: #f6c25c;
+  --g-gold-tint: #fdf3dc;
+  --g-leaf: #2e7d32;
+
+  /* Neutrals */
+  --g-ink: #1f1a22;
+  --g-ink-soft: #615b69;
+  --g-ink-faint: #8d8794;
+  --g-canvas: #f4f2f6;
+  --g-surface: #ffffff;
+  --g-sunken: #f8f7fa;
+  --g-rule: #ebe7ee;
+  --g-rule-strong: #d6d0db;
+
+  /* Status (all ≥ 4.5:1 on their tints) */
+  --g-success: #1e6b3a;
+  --g-success-tint: #e5f4ea;
+  --g-warning: #8a5300;
+  --g-warning-tint: #fff1d6;
+  --g-danger: #b42318;
+  --g-danger-tint: #fdebe9;
+  --g-info: #1d5fa8;
+  --g-info-tint: #e8f0fb;
+
+  /* Grade bands (text colour / chip fill) */
+  --g-band-1: #17663a; --g-band-1-bg: #dff3e6;   /* 1.0–1.4 */
+  --g-band-2: #3e6b14; --g-band-2-bg: #ebf4d9;   /* 1.5–1.9 */
+  --g-band-3: #6a5a00; --g-band-3-bg: #f6efc8;   /* 2.0–2.4 */
+  --g-band-4: #8a4b00; --g-band-4-bg: #fde7c8;   /* 2.5–3.0 */
+  --g-band-5: #a3261b; --g-band-5-bg: #fbe0dc;   /* 3.1–5.0 */
+  --g-band-na: #5d5764; --g-band-na-bg: #ece9ef; /* INC / DRP / — */
+
+  /* Type */
+  --g-font: 'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --g-font-display: 'Bricolage Grotesque', 'Hanken Grotesk', system-ui, sans-serif;
+
+  /* Shape & depth — radius encodes hierarchy: panels 18px, tiles 14px, controls 10px, pills full */
+  --g-radius-panel: 18px;
+  --g-radius-tile: 14px;
+  --g-radius-control: 10px;
+  --g-shadow-panel: 0 1px 2px rgba(58, 11, 17, 0.04), 0 6px 20px -10px rgba(58, 11, 17, 0.12);
+  --g-shadow-float: 0 18px 44px -12px rgba(31, 26, 34, 0.28), 0 2px 6px rgba(31, 26, 34, 0.06);
+  --g-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  /* Duration + easing, for `transition` only. Never put it in `animation`: its time would be read as a delay. */
+  --g-transition: 160ms var(--g-ease);
+
+  --evsu-sidebar-width: 256px;
+  --evsu-topbar-height: 72px;
+
+  /* Legacy token names used across components (mapped onto the palette) */
+  --evsu-primary: var(--g-maroon);
+  --evsu-primary-hover: var(--g-maroon-hover);
+  --evsu-primary-subtle: var(--g-maroon-tint);
+  --evsu-accent: var(--g-gold);
+  --evsu-bg: var(--g-canvas);
+  --evsu-surface: var(--g-surface);
+  --evsu-border: var(--g-rule);
+  --evsu-text: var(--g-ink);
+  --evsu-text-muted: var(--g-ink-soft);
+  --evsu-success: var(--g-success);
+  --evsu-success-subtle: var(--g-success-tint);
+  --evsu-warning: var(--g-warning);
+  --evsu-warning-subtle: var(--g-warning-tint);
+  --evsu-danger: var(--g-danger);
+  --evsu-danger-subtle: var(--g-danger-tint);
+  --evsu-info: var(--g-info);
+  --evsu-info-subtle: var(--g-info-tint);
+  --evsu-radius: var(--g-radius-panel);
+  --evsu-radius-sm: var(--g-radius-control);
+  --evsu-shadow: var(--g-shadow-panel);
+  --evsu-shadow-lg: var(--g-shadow-float);
+  --evsu-transition: var(--g-transition);
+
+  /* Bootstrap overrides */
+  --bs-body-font-family: var(--g-font);
+  --bs-body-font-size: 0.9375rem;
+  --bs-body-bg: var(--g-canvas);
+  --bs-body-color: var(--g-ink);
+  --bs-secondary-color: var(--g-ink-soft);
+  --bs-border-color: var(--g-rule);
+  --bs-primary: var(--g-maroon);
+  --bs-primary-rgb: 138, 28, 34;
+  --bs-link-color: var(--g-maroon);
+  --bs-link-color-rgb: 138, 28, 34;
+  --bs-link-hover-color: var(--g-maroon-hover);
+  --bs-link-hover-color-rgb: 116, 22, 27;
+  --bs-border-radius: var(--g-radius-control);
+  --bs-border-radius-sm: 8px;
+  --bs-border-radius-lg: var(--g-radius-panel);
+  --bs-focus-ring-color: rgba(138, 28, 34, 0.22);
+  --bs-heading-color: var(--g-ink);
+}

@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Environment files (secrets) — only the .env.example templates are committed
+.env
+.env.*
+!.env.example
+
+# Build output
+dist/
+build/
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Local Claude settings
+.claude/settings.local.json
+
+# MD files
+*.md

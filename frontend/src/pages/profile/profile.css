@@ -1,0 +1,269 @@
+.evsu-profile {
+  display: grid;
+  gap: 1.25rem;
+  max-width: 880px;
+}
+
+/* Identity band: who is signed in */
+.evsu-profile__identity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.25rem;
+  padding: 1.5rem 1.75rem;
+  border-radius: 22px;
+  color: #fff;
+  background:
+    radial-gradient(80% 140% at 100% 0%, rgba(232, 161, 26, 0.22), transparent 60%),
+    linear-gradient(135deg, var(--g-oxblood-2), var(--g-oxblood));
+  box-shadow: 0 20px 40px -26px rgba(58, 11, 17, 0.7);
+}
+.evsu-avatar.evsu-profile__avatar {
+  display: grid;
+  place-items: center;
+  width: 4.25rem;
+  height: 4.25rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: linear-gradient(140deg, var(--g-maroon), var(--g-oxblood));
+  box-shadow: inset 0 0 0 3px rgba(232, 161, 26, 0.7), 0 8px 18px -8px rgba(0, 0, 0, 0.6);
+  font-family: var(--g-font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.evsu-profile__name {
+  margin: 0;
+  font-family: var(--g-font-display);
+  font-size: 1.6rem;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+.evsu-profile__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.1rem 1rem;
+  margin: 0.25rem 0 0;
+  color: rgba(255, 255, 255, 0.75);
+  overflow-wrap: anywhere;
+}
+.evsu-profile__facts {
+  display: flex;
+  gap: 1.5rem;
+  margin: 0 0 0 auto;
+}
+.evsu-profile__facts dt {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+}
+.evsu-profile__facts dd {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0.1rem 0 0;
+  font-weight: 600;
+}
+
+.evsu-profile__section-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+.evsu-profile__section-icon {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: var(--g-maroon-tint);
+  color: var(--g-maroon);
+}
+.evsu-profile__form {
+  max-width: 44rem;
+}
+.evsu-profile__pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 1rem;
+}
+.evsu-profile__confirm {
+  padding: 1rem 1rem 0.1rem;
+  margin-bottom: 1rem;
+  border-radius: var(--g-radius-tile);
+  background: var(--g-gold-tint);
+}
+
+/* Live password checklist */
+.evsu-profile__rules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.1rem;
+  margin: -0.25rem 0 1.25rem;
+  font-size: 0.82rem;
+  color: var(--g-ink-soft);
+}
+.evsu-profile__rules li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: color var(--g-transition);
+}
+.evsu-profile__rule-mark {
+  display: grid;
+  place-items: center;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  border: 1.5px solid var(--g-rule-strong);
+  transition: background-color var(--g-transition), border-color var(--g-transition);
+}
+.evsu-profile__rules li.is-met {
+  color: var(--g-success);
+  font-weight: 600;
+}
+.evsu-profile__rules li.is-met .evsu-profile__rule-mark {
+  border-color: var(--g-success);
+  background: var(--g-success);
+  color: #fff;
+}
+
+@media (max-width: 767.98px) {
+  .evsu-profile__identity {
+    padding: 1.25rem;
+  }
+  .evsu-profile__facts {
+    margin-left: 0;
+    width: 100%;
+  }
+  .evsu-profile__pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Photo control: click the avatar or the buttons to change it */
+.evsu-profile__photo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+.evsu-profile__avatar-btn {
+  position: relative;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #fff;
+}
+.evsu-profile__avatar-btn:focus-visible {
+  outline: 2px solid var(--g-gold);
+  outline-offset: 3px;
+}
+.evsu-avatar.evsu-profile__avatar {
+  width: 5.5rem;
+  height: 5.5rem;
+}
+.evsu-profile__avatar-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(31, 26, 34, 0.55);
+  opacity: 0;
+  transition: opacity var(--g-transition);
+}
+.evsu-profile__avatar-btn:hover .evsu-profile__avatar-overlay,
+.evsu-profile__avatar-btn:focus-visible .evsu-profile__avatar-overlay,
+.evsu-profile__avatar-btn:disabled .evsu-profile__avatar-overlay {
+  opacity: 1;
+}
+.evsu-profile__photo-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+.evsu-profile__photo-btn {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: rgba(255, 255, 255, 0.12);
+  --bs-btn-border-color: rgba(255, 255, 255, 0.22);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: rgba(255, 255, 255, 0.2);
+  --bs-btn-hover-border-color: rgba(255, 255, 255, 0.35);
+  --bs-btn-active-bg: rgba(255, 255, 255, 0.25);
+  --bs-btn-disabled-color: rgba(255, 255, 255, 0.7);
+  --bs-btn-disabled-bg: rgba(255, 255, 255, 0.08);
+  --bs-btn-padding-y: 0.2rem;
+  --bs-btn-padding-x: 0.6rem;
+  --bs-btn-font-size: 0.75rem;
+  box-shadow: none;
+}
+.evsu-profile__photo-btn.is-quiet {
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: transparent;
+  --bs-btn-color: rgba(255, 255, 255, 0.78);
+}
+.evsu-profile__photo-btn:focus-visible {
+  outline-color: var(--g-gold);
+}
+
+/* Full-size photo viewer (opened by clicking the avatar) */
+.evsu-photo-viewer {
+  display: grid;
+  gap: 0.85rem;
+  justify-items: center;
+}
+.evsu-photo-viewer__img {
+  display: block;
+  width: 100%;
+  max-width: 440px;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 20px;
+  background: var(--g-sunken);
+  box-shadow: 0 18px 40px -22px rgba(31, 26, 34, 0.45);
+}
+/* The frame clips the photo; the circle overlay previews the round avatar crop. */
+.evsu-photo-viewer__frame {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  overflow: hidden;
+  border-radius: 20px;
+  box-shadow: 0 18px 40px -22px rgba(31, 26, 34, 0.45);
+}
+.evsu-photo-viewer__frame .evsu-photo-viewer__img {
+  max-width: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+.evsu-photo-viewer__circle {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  /* A huge spread shadow fills everything outside the circle; the frame clips it to the photo. */
+  box-shadow: 0 0 0 100vmax rgba(20, 14, 22, 0.5);
+  outline: 2px solid rgba(255, 255, 255, 0.9);
+  outline-offset: -2px;
+  opacity: 0;
+  transition: opacity 200ms var(--g-ease);
+  pointer-events: none;
+}
+.evsu-photo-viewer__frame:hover .evsu-photo-viewer__circle {
+  opacity: 1;
+}
+/* Touch screens cannot hover: keep the circle visible there. */
+@media (hover: none) {
+  .evsu-photo-viewer__circle {
+    opacity: 1;
+  }
+}
+.evsu-photo-viewer__caption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  overflow-wrap: anywhere;
+}

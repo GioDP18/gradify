@@ -1,0 +1,40 @@
+/* Temporary password with a Generate button beside the field */
+.evsu-password-gen {
+  position: relative;
+}
+.evsu-password-gen__btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  --bs-btn-padding-y: 0.1rem;
+}
+.evsu-password-gen input {
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  letter-spacing: 0.02em;
+}
+
+/* Sign-in details shown once after creating an account / setting a password */
+.evsu-signin-details__list {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.9rem 1rem;
+  border-radius: var(--g-radius-tile);
+  background: var(--g-sunken);
+  border: 1px solid var(--g-rule);
+}
+.evsu-signin-details__list dt {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--g-ink-soft);
+}
+.evsu-signin-details__list dd {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.evsu-signin-details__list code {
+  font-size: 1rem;
+  color: var(--g-maroon);
+  user-select: all;
+}

@@ -1,0 +1,134 @@
+/* Public QR self-enrollment page: one card on a soft maroon-to-cream background. */
+.evsu-join {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: clamp(1.25rem, 6vh, 3.5rem) 1rem 2.5rem;
+  overflow-x: hidden;
+  isolation: isolate;
+  /* Below the campus band: warm cream with soft gold and maroon glows, never a flat field. */
+  background:
+    radial-gradient(40% 30% at 8% 62%, rgba(232, 161, 26, 0.12), transparent 70%),
+    radial-gradient(45% 35% at 95% 85%, rgba(138, 18, 24, 0.08), transparent 70%),
+    linear-gradient(180deg, #fbf8f4 0%, #f7f0e8 100%);
+}
+
+/* Campus band across the top, warmed and fading into EVSU maroon. */
+.evsu-join__hero {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: clamp(260px, 42vh, 400px);
+  z-index: -1;
+  overflow: hidden;
+  background: #6a0911;
+}
+.evsu-join__photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 38%;
+  filter: saturate(1.12) sepia(0.28) contrast(1.04) brightness(1.03);
+}
+.evsu-join__hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(45% 60% at 12% 0%, rgba(255, 206, 128, 0.45), transparent 70%),
+    linear-gradient(180deg, rgba(120, 12, 22, 0.55) 0%, rgba(128, 14, 24, 0.78) 55%, rgba(106, 9, 17, 0.92) 100%);
+}
+/* The band's lower edge curves into the page with a gold ribbon. */
+.evsu-join__wave {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  z-index: 1;
+  width: 100%;
+  height: clamp(48px, 9vw, 110px);
+}
+
+.evsu-join__card {
+  width: 100%;
+  max-width: 560px;
+  padding: 1.25rem 1.25rem 1.5rem;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 18px 44px -18px rgba(58, 11, 17, 0.45);
+}
+.evsu-join__logo {
+  display: block;
+  width: 130px;
+  height: auto;
+  margin: -0.5rem auto -0.5rem;
+}
+.evsu-join__class {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--g-rule);
+  text-align: center;
+}
+.evsu-join__title {
+  margin-bottom: 0.25rem;
+  font-size: 1.45rem;
+  color: var(--g-maroon);
+}
+.evsu-join__pair,
+.evsu-join__triple {
+  display: grid;
+  gap: 0 0.85rem;
+}
+.evsu-join__pair {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.evsu-join__triple {
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 0.8fr);
+}
+.evsu-join .form-control,
+.evsu-join .form-select {
+  font-size: 16px; /* stops phones from zooming into the field */
+}
+.evsu-join__notice {
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  padding: 1.5rem 0.5rem 0.5rem;
+  text-align: center;
+  color: var(--g-ink);
+}
+.evsu-join__notice > svg {
+  color: var(--g-maroon);
+}
+.evsu-join__notice.is-success > svg {
+  color: var(--g-success);
+}
+@media (max-width: 479.98px) {
+  .evsu-join__pair,
+  .evsu-join__triple {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+/* Phones: a taller campus band with some of it showing above the card. */
+@media (max-width: 575.98px) {
+  .evsu-join {
+    padding-top: 5.5rem;
+  }
+  .evsu-join__hero {
+    height: 330px;
+  }
+}
+
+/* "Is this the right class?" — shown when course / year / section differ from the class */
+.evsu-join__mismatch {
+  padding: 0.9rem 1rem;
+  border-radius: 14px;
+  background: var(--g-warning-tint);
+  color: #5b3d00;
+}
+.evsu-join__mismatch .btn {
+  flex: 1 1 10rem;
+}

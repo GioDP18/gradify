@@ -1,0 +1,460 @@
+/*
+ * Sign-in page, built to the 1672×941 design. Every size is in design pixels times --u, the
+ * scale that fits the design to the screen, so on a 16:9 screen it matches the design point for
+ * point; on other shapes the photo and cream side stretch and the content stays centred.
+ */
+.lg {
+  --u: min(calc(100vw / 1672), calc(100vh / 941));
+  --lg-maroon: #8a1218;
+  --lg-maroon-text: #8c1119;
+  --lg-gold: #f0b738;
+  --lg-ink: #3b3538;
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  background: #fbf8f4;
+  font-family: 'Lato', var(--g-font);
+  isolation: isolate;
+}
+
+/* ── Photo (left), warmed, fading into maroon at the bottom ── */
+.lg__photo {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 66%;
+  z-index: -3;
+  overflow: hidden;
+  /* Below the photo: the deep maroon the design fades into. */
+  background: linear-gradient(to bottom, #7e0d16, #6a0911);
+}
+/* The whole photo across the panel (sky and building), as in the design. */
+.lg__photo img {
+  display: block;
+  width: 100%;
+  min-width: calc(1240 * var(--u));
+  height: auto;
+  /* Late-afternoon warmth, as in the design. */
+  filter: saturate(1.12) sepia(0.28) contrast(1.04) brightness(1.03);
+  /* The photo's lower edge melts into the maroon (no visible line). */
+  -webkit-mask-image: linear-gradient(to bottom, #000 80%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 80%, transparent 100%);
+}
+.lg__photo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(40% 34% at 8% 4%, rgba(255, 206, 128, 0.7), transparent 72%),
+    radial-gradient(60% 40% at 30% 0%, rgba(255, 196, 120, 0.25), transparent 70%),
+    /* Heavier behind the words (left), lighter toward the ribbon so the campus shows through. */
+    linear-gradient(to right, rgba(110, 9, 17, 0.45) 0%, rgba(110, 9, 17, 0.2) 45%, rgba(110, 9, 17, 0) 80%),
+    linear-gradient(to bottom, rgba(120, 12, 22, 0) 0, rgba(120, 12, 22, 0) calc(400 * var(--u)), rgba(128, 14, 24, 0.55) calc(490 * var(--u)), rgba(122, 11, 20, 0.72) calc(640 * var(--u)), rgba(110, 9, 17, 0.9) calc(800 * var(--u)), rgba(104, 8, 16, 0.97) 100%);
+}
+/* Cream side, ribbons, and the top-right band (all one drawing, stretched to the screen). */
+.lg__ribbons {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+  pointer-events: none;
+}
+
+/* ── Welcome message (left) ── */
+.lg__hero {
+  position: absolute;
+  left: calc(66 * var(--u));
+  top: calc(50% - 15 * var(--u));
+  color: #ffffff;
+}
+.lg__kicker {
+  margin: 0;
+  font-family: 'Lora', Georgia, serif;
+  font-size: calc(19.5 * var(--u));
+  font-weight: 500;
+  letter-spacing: 0;
+  word-spacing: -0.04em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.lg__rule {
+  display: block;
+  width: calc(516 * var(--u));
+  height: max(1px, calc(2 * var(--u)));
+  margin-top: calc(24 * var(--u));
+  background: linear-gradient(90deg, #e8b34a, #d79a2b 70%, rgba(215, 154, 43, 0.6));
+}
+.lg__headline {
+  margin: calc(20 * var(--u)) 0 0;
+  font-family: 'Lora', Georgia, serif;
+  font-size: calc(69 * var(--u));
+  font-weight: 500;
+  line-height: 1.07;
+  letter-spacing: -0.005em;
+  text-shadow: 0 calc(2 * var(--u)) calc(14 * var(--u)) rgba(60, 0, 6, 0.35);
+}
+.lg__headline em {
+  font-size: calc(84 * var(--u));
+  font-style: italic;
+  font-weight: 700;
+  color: var(--lg-gold);
+}
+.lg__intro {
+  margin: calc(18 * var(--u)) 0 0;
+  font-size: calc(29 * var(--u));
+  line-height: 1.22;
+}
+.lg__values {
+  margin: calc(46 * var(--u)) 0 0;
+  font-family: 'Lora', Georgia, serif;
+  font-size: calc(20 * var(--u));
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--lg-gold);
+}
+.lg__credit {
+  position: absolute;
+  left: calc(14 * var(--u));
+  bottom: calc(8 * var(--u));
+  margin: 0;
+  font-size: max(10px, calc(11 * var(--u)));
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* ── Sign-in card (right) ── */
+.lg__side {
+  position: absolute;
+  left: calc(50% + 189 * var(--u));
+  top: calc(50% - 374 * var(--u));
+  width: calc(578 * var(--u));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.lg__card {
+  width: 100%;
+  padding: calc(16 * var(--u)) calc(36 * var(--u)) calc(21 * var(--u));
+  border-radius: calc(22 * var(--u));
+  background: #ffffff;
+  box-shadow: 0 calc(14 * var(--u)) calc(44 * var(--u)) rgba(70, 35, 25, 0.12), 0 calc(2 * var(--u)) calc(6 * var(--u)) rgba(70, 35, 25, 0.05);
+  text-align: center;
+  color: var(--lg-ink);
+}
+.lg__logo {
+  display: block;
+  width: calc(352 * var(--u));
+  height: auto;
+  /* The image has transparent space above and below the crest. */
+  margin: calc(-14 * var(--u)) auto calc(-30 * var(--u));
+}
+.lg__title {
+  margin: 0;
+  font-family: 'Lato', sans-serif;
+  font-size: calc(36 * var(--u));
+  font-weight: 700;
+  color: var(--lg-maroon-text);
+  letter-spacing: -0.005em;
+}
+.lg__subtitle {
+  margin: calc(10 * var(--u)) 0 0;
+  font-size: calc(20.7 * var(--u));
+  color: #4a4447;
+}
+.lg__alert {
+  margin: calc(16 * var(--u)) 0 0;
+  padding: calc(10 * var(--u)) calc(14 * var(--u));
+  font-size: max(13px, calc(16 * var(--u)));
+  text-align: left;
+}
+.lg__alert-icon {
+  width: max(14px, calc(18 * var(--u)));
+  height: max(14px, calc(18 * var(--u)));
+  margin-top: 0.15em;
+}
+.lg__card form {
+  margin-top: calc(21 * var(--u));
+  text-align: left;
+}
+.lg__field {
+  position: relative;
+  margin-bottom: calc(16 * var(--u));
+}
+.lg__input {
+  display: block;
+  width: 100%;
+  height: calc(58 * var(--u));
+  padding: 0 calc(16 * var(--u)) 0 calc(68 * var(--u));
+  border: max(1px, calc(1.5 * var(--u))) solid #d9d4d4;
+  border-radius: calc(8 * var(--u));
+  background: #ffffff;
+  font-family: 'Lato', sans-serif;
+  font-size: calc(21 * var(--u));
+  color: #2c2629;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+.lg__input::placeholder {
+  color: #4e474b;
+}
+.lg__input:focus {
+  outline: none;
+  border-color: var(--lg-maroon);
+  box-shadow: 0 0 0 calc(3 * var(--u)) rgba(138, 18, 24, 0.15);
+}
+.lg__input.is-invalid {
+  border-color: var(--g-danger);
+}
+.lg__input--password {
+  padding-right: calc(64 * var(--u));
+}
+.lg__icon {
+  position: absolute;
+  left: calc(21 * var(--u));
+  top: calc(29 * var(--u));
+  width: calc(25 * var(--u));
+  height: calc(25 * var(--u));
+  transform: translateY(-50%);
+  color: #5d5659;
+  pointer-events: none;
+}
+.lg__eye {
+  position: absolute;
+  right: calc(10 * var(--u));
+  top: calc(29 * var(--u));
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: calc(44 * var(--u));
+  height: calc(44 * var(--u));
+  padding: 0;
+  border: 0;
+  border-radius: calc(8 * var(--u));
+  background: transparent;
+  color: #4e474b;
+}
+.lg__eye svg {
+  width: calc(26 * var(--u));
+  height: calc(26 * var(--u));
+}
+.lg__error {
+  margin-top: calc(6 * var(--u));
+  font-size: max(12px, calc(16 * var(--u)));
+  color: var(--g-danger);
+}
+.lg__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: calc(13 * var(--u));
+}
+.lg__check {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(12 * var(--u));
+  margin: 0;
+  font-size: calc(19 * var(--u));
+  color: #3b3538;
+  cursor: pointer;
+}
+.lg__check input {
+  appearance: none;
+  width: calc(22 * var(--u));
+  height: calc(22 * var(--u));
+  margin: 0;
+  border: max(1.5px, calc(2 * var(--u))) solid #6d6669;
+  border-radius: calc(3 * var(--u));
+  background: #ffffff;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.lg__check input:checked {
+  border-color: var(--lg-maroon);
+  background: var(--lg-maroon);
+}
+.lg__check input:checked::after {
+  content: '';
+  width: 30%;
+  height: 55%;
+  margin-top: -12%;
+  border: solid #ffffff;
+  border-width: 0 max(1.5px, calc(2.5 * var(--u))) max(1.5px, calc(2.5 * var(--u))) 0;
+  transform: rotate(45deg);
+}
+.lg__link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: 'Lato', sans-serif;
+  font-size: calc(19 * var(--u));
+  font-weight: 700;
+  color: #a3121d;
+}
+.lg__link:hover {
+  color: #7a0d14;
+  text-decoration: underline;
+}
+.lg__submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(12 * var(--u));
+  width: 100%;
+  height: calc(56 * var(--u));
+  margin-top: calc(22 * var(--u));
+  border: 0;
+  border-radius: calc(8 * var(--u));
+  background: var(--lg-maroon);
+  color: #ffffff;
+  font-family: 'Lato', sans-serif;
+  font-size: calc(25 * var(--u));
+  font-weight: 500;
+  transition: background-color 150ms ease;
+}
+.lg__submit:hover:not(:disabled) {
+  background: #74060d;
+}
+.lg__submit:disabled {
+  opacity: 0.8;
+}
+.lg__submit svg {
+  width: calc(26 * var(--u));
+  height: calc(26 * var(--u));
+}
+.lg__help-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(5 * var(--u));
+  margin: calc(15 * var(--u)) 0 0;
+  font-size: calc(18 * var(--u));
+  color: #3f383c;
+}
+/* The faint rules either side of "Need help signing in?" */
+.lg__help-line::before,
+.lg__help-line::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  margin: 0 calc(16 * var(--u));
+  background: #ebe5e5;
+}
+.lg__help-line .lg__link {
+  font-size: calc(18 * var(--u));
+}
+.lg__help {
+  margin: calc(14 * var(--u)) 0 0;
+  padding: calc(10 * var(--u)) calc(14 * var(--u));
+  border-radius: calc(8 * var(--u));
+  background: #fdf3dc;
+  color: #5b3d00;
+  font-size: max(13px, calc(16 * var(--u)));
+  text-align: left;
+}
+.lg__footer {
+  display: flex;
+  align-items: center;
+  gap: calc(28 * var(--u));
+  margin-top: calc(32 * var(--u));
+  font-size: calc(16 * var(--u));
+  color: #4f484b;
+  white-space: nowrap;
+}
+.lg__footer-sep {
+  width: max(1px, calc(1.5 * var(--u)));
+  height: calc(26 * var(--u));
+  background: #4f484b;
+}
+.lg__secure {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(8 * var(--u));
+  font-size: calc(15 * var(--u));
+}
+.lg__secure svg {
+  width: calc(20 * var(--u));
+  height: calc(20 * var(--u));
+  color: var(--lg-maroon);
+}
+.lg :focus-visible {
+  outline: 2px solid var(--lg-maroon);
+  outline-offset: 2px;
+}
+
+/* ── Phones and small tablets: photo and message on top, card below ── */
+@media (max-width: 991.98px) {
+  .lg {
+    --u: calc(min(100vw - 32px, 520px) / 578);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 1.5rem;
+  }
+  .lg__photo {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    height: calc(560 * var(--u));
+    border-bottom: 5px solid var(--lg-gold);
+  }
+  .lg__photo::after {
+    background: linear-gradient(to bottom, rgba(120, 12, 22, 0.1) 0%, rgba(128, 14, 24, 0.75) 45%, rgba(104, 8, 16, 0.96) 100%);
+  }
+  .lg__ribbons {
+    display: none;
+  }
+  .lg__hero {
+    left: 16px;
+    right: 16px;
+    top: auto;
+    bottom: auto;
+    top: calc(560 * var(--u));
+    transform: translateY(-100%);
+    padding-bottom: calc(40 * var(--u));
+  }
+  .lg__rule {
+    width: 70%;
+  }
+  .lg__headline {
+    font-size: calc(58 * var(--u));
+  }
+  .lg__headline em {
+    font-size: calc(64 * var(--u));
+  }
+  .lg__intro {
+    font-size: calc(24 * var(--u));
+  }
+  .lg__values {
+    margin-top: calc(28 * var(--u));
+  }
+  .lg__credit {
+    top: 8px;
+    right: 10px;
+    left: auto;
+    bottom: auto;
+  }
+  .lg__side {
+    position: relative;
+    left: auto;
+    top: auto;
+    margin-top: 1.25rem;
+  }
+  .lg__subtitle,
+  .lg__check,
+  .lg__link,
+  .lg__help-line,
+  .lg__help-line .lg__link,
+  .lg__footer,
+  .lg__secure {
+    font-size: max(13px, calc(19 * var(--u)));
+  }
+  .lg__input {
+    font-size: 16px; /* stops phones zooming into the field */
+  }
+  .lg__footer {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem 1rem;
+    white-space: normal;
+  }
+}

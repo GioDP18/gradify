@@ -1,0 +1,104 @@
+/* Print-friendly output for grading sheets and individual reports. */
+.print-only {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
+  body {
+    background: #fff !important;
+    color: #000;
+    font-size: 11px;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .no-print,
+  .evsu-sidebar,
+  .evsu-topbar,
+  .evsu-drawer-backdrop,
+  .evsu-toasts,
+  .evsu-skip-link,
+  .evsu-savebar,
+  .evsu-search,
+  .btn {
+    display: none !important;
+  }
+
+  .evsu-main {
+    margin-left: 0 !important;
+  }
+  .evsu-content {
+    padding: 0 !important;
+  }
+
+  .evsu-card,
+  .evsu-table-wrap {
+    box-shadow: none !important;
+    border: 1px solid #bbb !important;
+    overflow: visible !important;
+  }
+
+  /* Keep real tables on paper (no mobile card layout). */
+  .evsu-table thead {
+    display: table-header-group !important;
+  }
+  .evsu-table {
+    display: table !important;
+    font-size: 10px;
+  }
+  .evsu-table tbody {
+    display: table-row-group !important;
+  }
+  .evsu-table tr {
+    display: table-row !important;
+    page-break-inside: avoid;
+  }
+  .evsu-table td,
+  .evsu-table th {
+    display: table-cell !important;
+    padding: 4px 6px !important;
+  }
+  .evsu-table td[data-label]::before {
+    content: none !important;
+  }
+
+  .evsu-status {
+    padding: 0;
+    background: none !important;
+    color: #000 !important;
+  }
+
+  .evsu-avoid-break {
+    page-break-inside: avoid;
+  }
+
+  .evsu-print-header {
+    border-bottom: 2px solid #8a1c22;
+    padding-bottom: 6px;
+    margin-bottom: 10px;
+  }
+  .evsu-print-header__brand {
+    font-size: 16px;
+    font-weight: 700;
+    color: #8a1c22;
+  }
+  .evsu-print-header__title {
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .evsu-print-header__line {
+    font-size: 10px;
+  }
+
+  a {
+    color: #000 !important;
+    text-decoration: none !important;
+  }
+}

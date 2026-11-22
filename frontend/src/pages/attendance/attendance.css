@@ -1,0 +1,36 @@
+/* Present / Absent / Excused segmented radio */
+.evsu-att-toggle {
+  display: inline-flex;
+  gap: 0.2rem;
+  padding: 0.22rem;
+  border-radius: 12px;
+  background: #eeebf1;
+}
+.evsu-att-toggle__opt {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.34rem 0.75rem;
+  border-radius: 9px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--g-ink-soft);
+  cursor: pointer;
+  user-select: none;
+  transition: background-color var(--g-transition), color var(--g-transition), box-shadow var(--g-transition);
+}
+.evsu-att-toggle__opt:hover {
+  color: var(--g-ink);
+  background: rgba(255, 255, 255, 0.6);
+}
+input:checked + .evsu-att-toggle__opt--present { background: var(--g-success); color: #fff; box-shadow: 0 4px 10px -4px rgba(30, 107, 58, 0.6); }
+input:checked + .evsu-att-toggle__opt--absent { background: var(--g-danger); color: #fff; box-shadow: 0 4px 10px -4px rgba(180, 35, 24, 0.6); }
+input:checked + .evsu-att-toggle__opt--excused { background: #8f5b0f; color: #fff; box-shadow: 0 4px 10px -4px rgba(143, 91, 15, 0.6); }
+input:focus-visible + .evsu-att-toggle__opt {
+  outline: 2px solid var(--g-maroon);
+  outline-offset: 1px;
+}
+input:disabled + .evsu-att-toggle__opt {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
