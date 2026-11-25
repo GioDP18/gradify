@@ -74,8 +74,8 @@
 }
 .evsu-setting--link:hover {
   color: var(--g-ink);
-  border-color: rgba(138, 28, 34, 0.25);
-  box-shadow: 0 10px 22px -16px rgba(58, 11, 17, 0.35);
+  border-color: rgba(138, 18, 24, 0.25);
+  box-shadow: 0 10px 22px -16px rgba(70, 35, 25, 0.35);
 }
 .evsu-setting--link .evsu-setting__label {
   cursor: inherit;

@@ -141,6 +141,7 @@ export async function getOverview(instructorId, { classId, period, from, to }) {
         complete: cs.complete,
         passed: cs.passed,
         incomplete: cs.incomplete + cs.lapsed,
+        dropped: c.dropped,
         average: cs.averagePercentage,
         attendanceRate: totals(c.sessions).attendanceRate,
       };

@@ -1,9 +1,9 @@
 /** Shared chart colours (Recharts needs literal values; these mirror styles/tokens.css). */
 export const CHART = {
-  maroon: '#8a1c22',
+  maroon: '#8a1218',
   gold: '#d48f0c',
-  grid: '#ebe7ee',
-  tick: { fontSize: 11, fill: '#615b69' },
+  grid: '#ece6e1',
+  tick: { fontSize: 11, fill: '#5d5659' },
 };
 
 /** Bar fill per grade-distribution bucket — same ramp as the grade chips (all ≥ 3:1 on white). */

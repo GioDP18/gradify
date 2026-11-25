@@ -21,7 +21,7 @@ const overview = {
   attendance: { sessions: 12, present: 350, absent: 20, excused: 14, total: 384, attendanceRate: 94.79 },
   studentsComplete: 25, studentsIncomplete: 6, studentsNotComputable: 0, studentsPending: 0, classAverage: 84.37, passed: 23,
   instructor: { activeClasses: 1, activeStudents: 33 },
-  classes: [{ id: 'c1', subjectCode: 'IT 101', subjectTitle: 'Introduction to Computing', section: 'BSIT-1A', schoolYear: '2026-2027', semester: 'FIRST', students: 32, complete: 25, passed: 23, incomplete: 6, average: 84.37, attendanceRate: 94.79 }],
+  classes: [{ id: 'c1', subjectCode: 'IT 101', subjectTitle: 'Introduction to Computing', section: 'BSIT-1A', schoolYear: '2026-2027', semester: 'FIRST', students: 32, complete: 25, passed: 23, incomplete: 6, dropped: 1, average: 84.37, attendanceRate: 94.79 }],
 };
 const performance = {
   focusPeriod: 'OVERALL',
@@ -61,6 +61,10 @@ describe('dashboard, all classes (default)', () => {
 
     const classes = screen.getByRole('region', { name: 'Your classes' });
     expect(within(classes).getByText('IT 101 · BSIT-1A')).toBeInTheDocument();
+    expect(within(classes).getByRole('columnheader', { name: 'DRP' })).toBeInTheDocument();
+    expect(within(classes).getByTitle('Dropped')).toHaveTextContent('1');
+    expect(within(classes).getByRole('columnheader', { name: 'Failed' })).toBeInTheDocument();
+    expect(within(classes).getByTitle('Grade below 3.0')).toHaveTextContent('2');
     await userEvent.click(within(classes).getByRole('button', { name: 'Show only IT 101 · BSIT-1A' }));
     await waitFor(() => expect(dashboardApi.getOverview).toHaveBeenLastCalledWith({ classId: 'c1', period: '', from: '', to: '' }));
     expect(screen.getByLabelText('Active class')).toHaveValue('c1');
@@ -80,6 +84,7 @@ describe('dashboard, one class', () => {
     expect(screen.getByRole('link', { name: /Total absent: 20/ })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Total excused: 14/ })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Complete scores: 25/ })).toHaveAttribute('href', '/grading?period=overall&status=COMPLETE');
+    expect(screen.getByRole('link', { name: /Failed: 2/ })).toHaveAttribute('href', '/grading?period=overall&status=FAILED');
     expect(screen.getByRole('link', { name: /Incomplete scores: 6/ })).toHaveAttribute('href', '/grading?period=overall&status=INCOMPLETE');
     expect(screen.getByRole('link', { name: /Class average: 84.37%/ })).toBeInTheDocument();
     expect(dashboardApi.getOverview).toHaveBeenCalledWith({ classId: 'c1', period: '', from: '', to: '' });
