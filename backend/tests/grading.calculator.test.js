@@ -262,7 +262,7 @@ describe('configuration validation', () => {
   it('rejects component weights that do not total 100%', () => {
     const c = clone();
     c.periods.MIDTERM.components[0].weight = 15;
-    expect(validateConfiguration(c)).toEqual([{ field: 'periods.MIDTERM.components', message: 'MIDTERM component weights must add up to 100%' }]);
+    expect(validateConfiguration(c)).toEqual([{ field: 'periods.MIDTERM.components', message: 'Midterm component weights must add up to 100%' }]);
   });
 
   it('rejects period weights that do not total 100%', () => {
