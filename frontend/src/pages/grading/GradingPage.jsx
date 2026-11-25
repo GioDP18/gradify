@@ -11,7 +11,7 @@ import DataTable from '../../components/common/DataTable';
 import SearchBar from '../../components/common/SearchBar';
 import Spinner from '../../components/common/Spinner';
 import ActionButton from '../../components/common/ActionButton';
-import { EmptyState, ErrorState, SkeletonCards } from '../../components/common/States';
+import { EmptyState, ErrorState, Skeleton } from '../../components/common/States';
 import GradeStatusBadge from '../../components/grading/GradeStatusBadge';
 import GradeChip from '../../components/grading/GradeChip';
 import { CHART, bucketFill } from '../../config/chartTheme';
@@ -48,6 +48,19 @@ function Tile({ label, value, hint }) {
   );
 }
 
+/** Stands in for the grade distribution chart while a sheet loads: a card of rising and falling bars. */
+function ChartSkeleton() {
+  const heights = [28, 46, 70, 92, 78, 58, 40, 24, 34];
+  return (
+    <div className="evsu-card p-3 mb-3 no-print" aria-hidden="true">
+      <h2 className="h6 mb-3">Grade distribution</h2>
+      <div className="evsu-chart-skeleton">
+        {heights.map((h, i) => <Skeleton key={i} width="100%" height={`${h}%`} />)}
+      </div>
+    </div>
+  );
+}
+
 /** Class grading sheet. Every number shown comes from the grading engine. */
 export default function GradingPage() {
   const toast = useToast();
@@ -60,7 +73,12 @@ export default function GradingPage() {
   const [sort, setSort] = useState({ field: 'fullName', order: 'asc' });
   const [exporting, setExporting] = useState(null);
 
-  const { data, isPending, isFetching, error, refetch } = useClassGrades(period, activeClass?.id);
+  const { data, isPending, isFetching, isPlaceholderData, error, refetch } = useClassGrades(period, activeClass?.id);
+  // Switching to a period (or class) that is not loaded yet: show the skeleton, not the previous sheet.
+  const switching = isPlaceholderData;
+  // While loading, the sheet keeps its own layout (tiles, chart, table) with placeholders in it.
+  const loading = (isPending || switching) && !error;
+  const figure = (render) => (loading ? <Skeleton width="3.25rem" height="2.05rem" /> : render());
   const recalc = useRecalculateClass();
   const axisProps = useCategoryAxisProps();
 
@@ -233,11 +251,9 @@ export default function GradingPage() {
       )}
 
       {error && <div className="evsu-card"><ErrorState title="Could not load grades" error={error} onRetry={refetch} /></div>}
-      {isPending && !error && <SkeletonCards count={3} />}
-
-      {summary && (
+      {(loading || summary) && (
         <>
-          {summary.pending > 0 && (
+          {!loading && summary.pending > 0 && (
             <div className="alert alert-warning d-flex flex-wrap align-items-center justify-content-between gap-2 no-print" role="status">
               <span className="d-inline-flex align-items-center gap-2">
                 <TriangleAlert size={16} aria-hidden="true" />
@@ -247,17 +263,18 @@ export default function GradingPage() {
             </div>
           )}
 
-          <div className="evsu-stat-row mb-3">
-            <Tile label="Students" value={summary.totalStudents} />
-            <Tile label="With grade" value={summary.complete} hint={`${summary.passed} passed`} />
-            <Tile label="INC" value={summary.incomplete + summary.lapsed} hint={summary.lapsed ? `${summary.lapsed} lapsed` : undefined} />
-            <Tile label="DRP" value={summary.dropped} />
-            <Tile label="Class average" value={formatPercentFixed(summary.averagePercentage)} hint="of computed %" />
-            <Tile label="Highest grade" value={summary.highestGrade === null || summary.highestGrade === undefined ? '—' : <GradeChip grade={summary.highestGrade} />} />
-            <Tile label="Lowest grade" value={summary.lowestGrade === null || summary.lowestGrade === undefined ? '—' : <GradeChip grade={summary.lowestGrade} />} />
+          <div className="evsu-stat-row mb-3" aria-busy={loading || undefined}>
+            <Tile label="Students" value={figure(() => summary.totalStudents)} />
+            <Tile label="With grade" value={figure(() => summary.complete)} hint={loading ? <Skeleton width="4.5rem" height="0.85rem" className="mt-1" /> : `${summary.passed} passed`} />
+            <Tile label="INC" value={figure(() => summary.incomplete + summary.lapsed)} hint={!loading && summary.lapsed ? `${summary.lapsed} lapsed` : undefined} />
+            <Tile label="DRP" value={figure(() => summary.dropped)} />
+            <Tile label="Class average" value={figure(() => formatPercentFixed(summary.averagePercentage))} hint="of computed %" />
+            <Tile label="Highest grade" value={figure(() => (summary.highestGrade === null || summary.highestGrade === undefined ? '—' : <GradeChip grade={summary.highestGrade} />))} />
+            <Tile label="Lowest grade" value={figure(() => (summary.lowestGrade === null || summary.lowestGrade === undefined ? '—' : <GradeChip grade={summary.lowestGrade} />))} />
           </div>
 
-          {summary.distribution.some((d) => d.count > 0) && (
+          {loading && <ChartSkeleton />}
+          {!loading && summary.distribution.some((d) => d.count > 0) && (
             <div className="evsu-card p-3 mb-3 no-print">
               <h2 className="h6 mb-3">Grade distribution</h2>
               <div style={{ width: '100%', height: 200 }} role="img" aria-label={`Grade distribution: ${summary.distribution.map((d) => `${d.label}: ${d.count}`).join(', ')}`}>
@@ -281,19 +298,20 @@ export default function GradingPage() {
             <select className="form-select w-auto" aria-label="Filter by result" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
               {STATUS_FILTERS.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
             </select>
-            {isFetching && !isPending && <Spinner size="sm" label="Refreshing grades" className="text-muted-evsu" />}
+            {isFetching && !loading && <Spinner size="sm" label="Refreshing grades" className="text-muted-evsu" />}
           </div>
 
           <DataTable
             caption={`${GRADING_TABS.find((t) => t.value === period).label} grades`}
             columns={columns}
             rows={rows}
+            loading={loading}
             rowKey={(r) => r.studentId}
             sort={sort}
             onSortChange={(field) => setSort((s) => ({ field, order: s.field === field && s.order === 'asc' ? 'desc' : 'asc' }))}
             rowClassName={(r) => (r.completionStatus === 'DROPPED' ? 'text-muted-evsu' : '')}
             empty={
-              data.rows.length === 0
+              !data || data.rows.length === 0
                 ? <EmptyState title="No students enrolled" description="Enroll students in this class to see their grades." action={<Link to="/students" className="btn btn-primary">Go to Students</Link>} />
                 : <EmptyState title="No students match your filters" />
             }

@@ -343,6 +343,18 @@ a {
   background-size: 200% 100%;
   animation: evsu-shimmer 1.2s ease-in-out infinite;
 }
+/* Placeholder for a bar chart: bars standing on the baseline. */
+.evsu-chart-skeleton {
+  display: flex;
+  align-items: flex-end;
+  gap: 4%;
+  height: 200px;
+  padding: 0 4% 1.25rem;
+  border-bottom: 1px solid var(--g-rule);
+}
+.evsu-chart-skeleton .evsu-skeleton {
+  border-radius: 6px 6px 0 0;
+}
 @keyframes evsu-shimmer {
   from { background-position: 200% 0; }
   to { background-position: -200% 0; }
