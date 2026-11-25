@@ -47,7 +47,7 @@ export default function AppLayout() {
     <ClassProvider>
       <div className="evsu-shell">
         <a href="#main-content" className="evsu-skip-link">Skip to main content</a>
-        <Sidebar id={SIDEBAR_ID} open={sidebarOpen} onClose={() => setSidebarOpen(false)} onLogout={handleLogout} />
+        <Sidebar id={SIDEBAR_ID} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         {sidebarOpen && <div className="evsu-drawer-backdrop d-lg-none" onClick={() => setSidebarOpen(false)} aria-hidden="true" />}
         <div className="evsu-main">
           <Topbar
