@@ -11,6 +11,7 @@ import SearchBar from '../../components/common/SearchBar';
 import StatusBadge from '../../components/common/StatusBadge';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import Spinner from '../../components/common/Spinner';
+import ActionButton from '../../components/common/ActionButton';
 import { ErrorState, Skeleton } from '../../components/common/States';
 import { formatDateOnly, formatPercent } from '../../utils/format';
 import './attendance.css';
@@ -100,9 +101,9 @@ export default function AttendanceSessionPage() {
   };
 
   const reloadLatest = async () => {
+    await refetch();
     setDraft({});
     setStaleError(null);
-    await refetch();
   };
 
   const columns = [
@@ -153,7 +154,7 @@ export default function AttendanceSessionPage() {
       {staleError && (
         <div className="alert alert-warning d-flex flex-wrap align-items-center justify-content-between gap-2" role="alert">
           <span>{staleError}</span>
-          <button type="button" className="btn btn-sm btn-warning" onClick={reloadLatest}>Reload latest (discard my changes)</button>
+          <ActionButton className="btn btn-sm btn-warning" onClick={reloadLatest}>Reload latest (discard my changes)</ActionButton>
         </div>
       )}
 

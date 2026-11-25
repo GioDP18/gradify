@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { ShieldAlert } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import ActionButton from '../../components/common/ActionButton';
 
 /** Shown to signed-in users (e.g. students) who try to open instructor-only pages. */
 export default function AccessRestrictedPage() {
@@ -23,9 +24,9 @@ export default function AccessRestrictedPage() {
         {user?.role === 'STUDENT' && ' Student features are not available yet.'}
       </p>
       <p className="small text-muted-evsu">Signed in as {user?.email}</p>
-      <button type="button" className="btn btn-primary" onClick={handleLogout}>
+      <ActionButton className="btn btn-primary" onClick={handleLogout} busyLabel="Signing out…">
         Sign out
-      </button>
+      </ActionButton>
     </main>
   );
 }

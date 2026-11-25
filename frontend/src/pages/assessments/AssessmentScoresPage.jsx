@@ -11,6 +11,7 @@ import SearchBar from '../../components/common/SearchBar';
 import StatusBadge from '../../components/common/StatusBadge';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import Spinner from '../../components/common/Spinner';
+import ActionButton from '../../components/common/ActionButton';
 import { ErrorState, Skeleton } from '../../components/common/States';
 import AssessmentStats from '../../components/assessments/AssessmentStats';
 import AssessmentFormModal from '../../components/assessments/AssessmentFormModal';
@@ -210,9 +211,9 @@ export default function AssessmentScoresPage({ typeKey }) {
       {staleError && (
         <div className="alert alert-warning d-flex flex-wrap align-items-center justify-content-between gap-2" role="alert">
           <span>{staleError}</span>
-          <button type="button" className="btn btn-sm btn-warning" onClick={async () => { setDraft({}); setStaleError(null); await refetch(); }}>
+          <ActionButton className="btn btn-sm btn-warning" onClick={async () => { await refetch(); setDraft({}); setStaleError(null); }}>
             Reload latest (discard my changes)
-          </button>
+          </ActionButton>
         </div>
       )}
 

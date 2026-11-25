@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Archive, ArchiveRestore, Download, Pencil, Plus, QrCode, Upload, UserMinus, UserPlus, Users, Eye } from 'lucide-react';
 import RefreshButton from '../../components/common/RefreshButton';
+import ActionButton from '../../components/common/ActionButton';
 import useRefresh from '../../hooks/useRefresh';
 import { useClassContext, formatClassLabel } from '../../context/ClassContext';
 import {
@@ -94,7 +95,7 @@ export default function StudentsPage() {
     [state.search, state.course, state.yearLevel, state.section, state.status, state.archived, state.enrollment, state.sort, state.order, state.page, inClassScope, activeClass?.id],
   );
 
-  const { data, isPending, isFetching, error, refetch } = useStudentList(query);
+  const { data, isPending, isFetching, isPlaceholderData, error, refetch } = useStudentList(query);
   const refresh = useRefresh([['students'], ['classes']]);
   const facets = useStudentFacets().data;
   const rows = data?.items ?? [];
@@ -234,9 +235,8 @@ export default function StudentsPage() {
                 </button>
               )}
               {inClassScope && s.enrollment?.status === 'DROPPED' && (
-                <button type="button" className="btn btn-sm btn-light" onClick={() => handleEnrollmentChange(s, 'ENROLLED')} aria-label={`Reinstate ${s.fullName} in class`} title="Reinstate in class">
-                  <UserPlus size={15} aria-hidden="true" />
-                </button>
+                <ActionButton className="btn btn-sm btn-light" onClick={() => handleEnrollmentChange(s, 'ENROLLED')} disabled={setEnrollment.isPending}
+                  aria-label={`Reinstate ${s.fullName} in class`} title="Reinstate in class" icon={UserPlus} iconSize={15} />
               )}
               <button type="button" className="btn btn-sm btn-light" onClick={() => setConfirm({ type: 'archive', student: s })} aria-label={`Archive ${s.fullName}`} title="Archive">
                 <Archive size={15} aria-hidden="true" />
@@ -266,10 +266,10 @@ export default function StudentsPage() {
         </div>
         <div className="d-flex flex-wrap gap-2">
           <button type="button" className="btn btn-light d-inline-flex align-items-center gap-2" onClick={handleExport} disabled={exporting}>
-            {exporting ? <Spinner size="sm" label="" /> : <Download size={16} aria-hidden="true" />} Export CSV
+            {exporting ? <Spinner size="sm" label="" /> : <Upload size={16} aria-hidden="true" />} Export CSV
           </button>
           <button type="button" className="btn btn-light d-inline-flex align-items-center gap-2" onClick={() => setImportOpen(true)}>
-            <Upload size={16} aria-hidden="true" /> Import CSV
+            <Download size={16} aria-hidden="true" /> Import CSV
           </button>
           {inClassScope && (
             <button type="button" className="btn btn-light d-inline-flex align-items-center gap-2" onClick={() => setQrOpen(true)}>
@@ -315,7 +315,7 @@ export default function StudentsPage() {
             </div>
           )}
         </div>
-        {isFetching && !isPending && !refresh.busy && <Spinner size="sm" label="Updating results" className="text-muted-evsu" />}
+        {isFetching && !isPending && !isPlaceholderData && !refresh.busy && <Spinner size="sm" label="Updating results" className="text-muted-evsu" />}
       </div>
 
       {canBulkEnroll && selected.size > 0 && (
@@ -336,7 +336,7 @@ export default function StudentsPage() {
           caption="Students"
           columns={columns}
           rows={rows}
-          loading={isPending || refresh.busy}
+          loading={isPending || isPlaceholderData || refresh.busy}
           sort={{ field: state.sort, order: state.order }}
           onSortChange={handleSort}
           selectedIds={selected}

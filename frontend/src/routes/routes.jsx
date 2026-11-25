@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import SettingsLayout from '../pages/settings/SettingsLayout';
 import { ProtectedRoute, PublicOnlyRoute, RoleRoute } from './guards';
-import { FullPageSpinner } from '../components/common/Spinner';
+import SplashScreen from '../components/common/SplashScreen';
 import AppLayout from '../components/layout/AppLayout';
 import LoginPage from '../pages/auth/LoginPage';
 import { ASSESSMENT_TYPES } from '../config/assessmentTypes';
@@ -62,7 +62,7 @@ export const routes = [
   {
     path: '/join/:token',
     element: (
-      <Suspense fallback={<FullPageSpinner />}>
+      <Suspense fallback={<SplashScreen />}>
         <JoinClassPage />
       </Suspense>
     ),
@@ -71,7 +71,7 @@ export const routes = [
   {
     path: '/system-status',
     element: (
-      <Suspense fallback={<FullPageSpinner />}>
+      <Suspense fallback={<SplashScreen />}>
         <SystemStatusPage />
       </Suspense>
     ),

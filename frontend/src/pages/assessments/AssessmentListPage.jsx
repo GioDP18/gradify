@@ -135,7 +135,7 @@ export default function AssessmentListPage({ typeKey }) {
           caption={`${periodLabel(period)} ${type.title}`}
           columns={columns}
           rows={query.data ?? []}
-          loading={query.isPending || refresh.busy}
+          loading={query.isPending || query.isPlaceholderData || refresh.busy}
           empty={
             search || status ? (
               <EmptyState title="Nothing matches your filters" />

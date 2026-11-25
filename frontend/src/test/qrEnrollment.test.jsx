@@ -91,6 +91,23 @@ describe('student: the page the QR code opens (no sign-in)', () => {
     expect(await screen.findByRole('heading', { name: "You're enrolled" })).toBeInTheDocument();
   });
 
+  it('locks the Enroll button with a spinner while enrolling, so it cannot be sent twice', async () => {
+    let finish;
+    vi.mocked(publicApi.getJoinInfo).mockResolvedValue(info);
+    vi.mocked(publicApi.selfEnroll).mockImplementation(() => new Promise((resolve) => { finish = resolve; }));
+    renderApp(`/join/${TOKEN}`);
+    await fill();
+    const button = screen.getByRole('button', { name: 'Enroll' });
+    await userEvent.click(button);
+    await waitFor(() => expect(button).toBeDisabled());
+    expect(button).toHaveTextContent('Enrolling…');
+    expect(button.querySelector('.spinner-border')).not.toBeNull();
+    await userEvent.click(button);
+    expect(publicApi.selfEnroll).toHaveBeenCalledTimes(1);
+    finish({ class: info.class, student: { studentNumber: '2025-00777', fullName: 'Rizal, José' } });
+    expect(await screen.findByRole('heading', { name: "You're enrolled" })).toBeInTheDocument();
+  });
+
   it('does not enroll without an email', async () => {
     vi.mocked(publicApi.getJoinInfo).mockResolvedValue(info);
     renderApp(`/join/${TOKEN}`);

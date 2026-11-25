@@ -10,6 +10,7 @@ import { useCategoryAxisProps } from '../../hooks/useMediaQuery';
 import DataTable from '../../components/common/DataTable';
 import SearchBar from '../../components/common/SearchBar';
 import Spinner from '../../components/common/Spinner';
+import ActionButton from '../../components/common/ActionButton';
 import { EmptyState, ErrorState, SkeletonCards } from '../../components/common/States';
 import GradeStatusBadge from '../../components/grading/GradeStatusBadge';
 import GradeChip from '../../components/grading/GradeChip';
@@ -242,7 +243,7 @@ export default function GradingPage() {
                 <TriangleAlert size={16} aria-hidden="true" />
                 {summary.pending} grade{summary.pending === 1 ? ' is' : 's are'} pending recalculation and {summary.pending === 1 ? 'is' : 'are'} not shown as final.
               </span>
-              <button type="button" className="btn btn-sm btn-warning" onClick={handleRecalculate} disabled={recalc.isPending}>Recalculate now</button>
+              <ActionButton className="btn btn-sm btn-warning" onClick={handleRecalculate} busy={recalc.isPending}>Recalculate now</ActionButton>
             </div>
           )}
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
@@ -81,8 +81,11 @@ export default function JoinClassPage() {
   const [formError, setFormError] = useState(null);
   // Set when the course / year / section entered differs from the class's (server check).
   const [mismatch, setMismatch] = useState(null);
+  // True from the click until the server answers: both Enroll buttons are locked meanwhile.
+  const [enrolling, setEnrolling] = useState(false);
+  const inFlight = useRef(false);
   const info = useQuery({ queryKey: ['join', token], queryFn: () => publicApi.getJoinInfo(token), retry: false });
-  const { register, handleSubmit, setError, getValues, setFocus, formState: { errors, isSubmitting } } = useForm({
+  const { register, handleSubmit, setError, getValues, setFocus, formState: { errors } } = useForm({
     defaultValues: { studentNumber: '', lastName: '', firstName: '', middleName: '', email: '', course: '', yearLevel: '', section: '' },
   });
 
@@ -133,8 +136,11 @@ export default function JoinClassPage() {
   }
 
   const submit = async (values, { confirmMismatch = false } = {}) => {
+    if (inFlight.current) return; // a second tap before the button is disabled
+    inFlight.current = true;
+    setEnrolling(true);
     setFormError(null);
-    setMismatch(null);
+    if (!confirmMismatch) setMismatch(null);
     try {
       const body = Object.fromEntries(FIELDS.map((f) => [f, typeof values[f] === 'string' ? values[f].trim() : values[f]]));
       body.yearLevel = Number(body.yearLevel);
@@ -154,7 +160,11 @@ export default function JoinClassPage() {
         setMismatch({ message: error.message, expected });
         return;
       }
+      setMismatch(null);
       if (!applyServerErrors(error, setError, FIELDS)) setFormError(error.message);
+    } finally {
+      inFlight.current = false;
+      setEnrolling(false);
     }
   };
   const onSubmit = (values) => submit(values);
@@ -196,16 +206,16 @@ export default function JoinClassPage() {
             <p className="fw-semibold mb-1 d-flex gap-2"><TriangleAlert size={18} className="flex-shrink-0 mt-1" aria-hidden="true" /> Are you irregular students?</p>
             <p className="small mb-2">{mismatch.message} Check your details, or enroll anyway if your instructor told you to join this class.</p>
             <div className="d-flex flex-wrap gap-2">
-              <button type="button" className="btn btn-light" onClick={() => { setMismatch(null); setFocus('course'); }}>Fix my details</button>
-              <button type="button" className="btn btn-primary" disabled={isSubmitting}
+              <button type="button" className="btn btn-light" disabled={enrolling} onClick={() => { setMismatch(null); setFocus('course'); }}>Fix my details</button>
+              <button type="button" className="btn btn-primary" disabled={enrolling} aria-busy={enrolling || undefined}
                 onClick={() => submit(getValues(), { confirmMismatch: true })}>
-                Enroll anyway
+                {enrolling ? <><Spinner size="sm" label="" className="me-2" />Enrolling…</> : 'Enroll anyway'}
               </button>
             </div>
           </div>
         ) : (
-          <button type="submit" className="btn btn-primary evsu-join__submit" disabled={isSubmitting}>
-            {isSubmitting ? <><Spinner size="sm" label="" /> Enrolling…</> : <>Enroll <ArrowRight size={18} aria-hidden="true" /></>}
+          <button type="submit" className="btn btn-primary evsu-join__submit" disabled={enrolling} aria-busy={enrolling || undefined}>
+            {enrolling ? <><Spinner size="sm" label="" /> Enrolling…</> : <>Enroll <ArrowRight size={18} aria-hidden="true" /></>}
           </button>
         )}
       </form>

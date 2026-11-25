@@ -49,7 +49,7 @@ function PhotoViewer({ open, user, busy, pending, onClose, onChange, onRemove, o
       ) : (
         <>
           <button type="button" className="btn btn-light me-auto" onClick={onRemove} disabled={locked}>
-            {busy === 'remove' ? 'Removing…' : 'Remove photo'}
+            {busy === 'remove' ? <><Spinner size="sm" label="" className="me-2" />Removing…</> : 'Remove photo'}
           </button>
           <button type="button" className="btn btn-light" onClick={onChange} disabled={locked}>Change photo</button>
           <button type="button" className="btn btn-primary" onClick={onClose} disabled={locked}>Close</button>

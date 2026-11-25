@@ -7,6 +7,7 @@ import { useToast } from '../../components/common/Toast';
 import StatusBadge from '../../components/common/StatusBadge';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import Spinner from '../../components/common/Spinner';
+import ActionButton from '../../components/common/ActionButton';
 import { ErrorState, Skeleton, EmptyState } from '../../components/common/States';
 import StudentFormModal from '../../components/students/StudentFormModal';
 import DropEnrollmentDialog from '../../components/students/DropEnrollmentDialog';
@@ -252,9 +253,9 @@ export default function StudentDetailPage() {
                       <UserMinus size={14} aria-hidden="true" /> Drop
                     </button>
                   ) : (
-                    <button type="button" className="btn btn-sm btn-light d-inline-flex align-items-center gap-1" onClick={() => changeEnrollment(e, 'ENROLLED')} disabled={setEnrollment.isPending}>
-                      <UserPlus size={14} aria-hidden="true" /> Reinstate
-                    </button>
+                    <ActionButton className="btn btn-sm btn-light d-inline-flex align-items-center gap-1" onClick={() => changeEnrollment(e, 'ENROLLED')} disabled={setEnrollment.isPending} icon={UserPlus} iconSize={14}>
+                      Reinstate
+                    </ActionButton>
                   ))}
                   {e.classStatus === 'ARCHIVED' && <StatusBadge status="ARCHIVED" label="Class archived" />}
                 </div>
