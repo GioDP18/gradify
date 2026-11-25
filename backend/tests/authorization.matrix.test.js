@@ -34,6 +34,7 @@ const ROUTES = [
   r('public', 'get', '/api/health'),
   r('public', 'post', '/api/auth/login'), r('public', 'post', '/api/auth/refresh'), r('public', 'post', '/api/auth/logout'),
   r('public', 'get', '/api/public/enroll/:token'), r('public', 'post', '/api/public/enroll/:token'),
+  r('public', 'get', '/api/public/grades/:token'),
   r('cron', 'get', '/api/internal/sweep'),
 
   r('any', 'get', '/api/auth/me'), r('any', 'patch', '/api/auth/me'), r('any', 'patch', '/api/auth/me/preferences'),
@@ -69,6 +70,9 @@ const ROUTES = [
     r('instructor', 'get', `/api/${m}/:id/scores`), r('instructor', 'put', `/api/${m}/:id/scores`),
   ]),
 
+  r('instructor', 'post', '/api/grading/share/bulk'), r('instructor', 'post', '/api/grading/share/bulk/stop'),
+  r('instructor', 'get', '/api/grading/share/:studentId'), r('instructor', 'put', '/api/grading/share/:studentId'),
+  r('instructor', 'delete', '/api/grading/share/:studentId'), r('instructor', 'post', '/api/grading/share/:studentId/email'),
   r('instructor', 'post', '/api/grading/recalculate'), r('instructor', 'get', '/api/grading/student/:studentId'),
   r('instructor', 'get', '/api/grading/:period'), r('instructor', 'get', '/api/grading/:period/summary'),
   r('instructor', 'get', '/api/grading/:period/export'),

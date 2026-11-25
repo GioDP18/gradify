@@ -7,6 +7,7 @@ import mongoose from 'mongoose';
 import { logger } from '../../config/logger.js';
 import { ComputedGrade, CALC_STATUSES } from '../../models/ComputedGrade.js';
 import { Class } from '../../models/Class.js';
+import { Enrollment } from '../../models/Enrollment.js';
 import { formatFullName } from '../../models/Student.js';
 import { ApiError } from '../../utils/ApiError.js';
 import { afterCommit } from '../../utils/transaction.js';
@@ -16,6 +17,7 @@ import { onSourceChanged } from './grading.events.js';
 import { computePeriod, computeOverall, COMPLETION_STATUS, CALCULATION_VERSION, incDeadline, remarksForGrade } from './grading.calculator.js';
 import { getActiveConfiguration, createVersion, listVersions, toPublicConfiguration } from './grading.config.service.js';
 import * as repo from './grading.repository.js';
+import { isMailConfigured } from '../mail.service.js';
 
 const PERIODS = ['MIDTERM', 'FINALS'];
 const MAX_ATTEMPTS = 4;
@@ -316,8 +318,11 @@ export async function getClassGrades(instructorId, classId, periodParam) {
   const period = parsePeriodParam(periodParam);
   const cls = await getOwnedClass(instructorId, classId);
   const config = await getActiveConfiguration();
-  const rows = await loadRows(cls.toObject(), period);
-  return { period, class: { id: cls._id.toString(), subjectCode: cls.subjectCode, section: cls.section, schoolYear: cls.schoolYear, semester: cls.semester }, configuration: publicConfigSummary(config), summary: summarize(rows), rows };
+  const loaded = await loadRows(cls.toObject(), period);
+  // Whether each student has been given a link to their own sheet (even one whose time has ended).
+  const sharedWith = new Set((await Enrollment.find({ class: cls._id, 'gradeShare.token': { $type: 'string' } }).select('student').lean()).map((e) => e.student.toString()));
+  const rows = loaded.map((row) => ({ ...row, shared: sharedWith.has(row.studentId) }));
+  return { period, class: { id: cls._id.toString(), subjectCode: cls.subjectCode, section: cls.section, schoolYear: cls.schoolYear, semester: cls.semester }, configuration: publicConfigSummary(config), summary: summarize(rows), rows, emailAvailable: isMailConfigured() };
 }
 
 export async function getClassSummary(instructorId, classId, periodParam) {
@@ -340,6 +345,31 @@ export async function getStudentGrade(instructorId, classId, periodParam, studen
     for (const p of PERIODS) [detail.periods[p]] = await loadRows(cls.toObject(), p, { studentId });
   }
   return { period, class: { id: cls._id.toString(), subjectCode: cls.subjectCode, subjectTitle: cls.subjectTitle, section: cls.section, schoolYear: cls.schoolYear, semester: cls.semester }, configuration: publicConfigSummary(config), grade: detail };
+}
+
+/**
+ * One student's complete grading sheet in a class (Midterm, Finals and Final Grade), for the
+ * page the student opens from a link their instructor shared. `cls` is a plain class object.
+ * Returns null when the student has no grade in the class.
+ */
+export async function getStudentSheet(cls, studentId) {
+  const config = await getActiveConfiguration();
+  const rows = {};
+  for (const p of [...PERIODS, 'OVERALL']) [rows[p]] = await loadRows(cls, p, { studentId: String(studentId) });
+  if (!rows.OVERALL) return null;
+  const [student] = await repo.studentsByIds([studentId]);
+  // Only what the student's page shows: no internal ids or calculation bookkeeping.
+  const view = ({ studentId: _id, archived: _archived, lastKnown: _lastKnown, ...row }) => row;
+  return {
+    class: { subjectCode: cls.subjectCode, subjectTitle: cls.subjectTitle, section: cls.section, schoolYear: cls.schoolYear, semester: cls.semester },
+    student: { studentNumber: student.studentNumber, fullName: formatFullName(student), course: student.course, yearLevel: student.yearLevel, section: student.section },
+    configuration: publicConfigSummary(config),
+    grades: {
+      midterm: rows.MIDTERM ? view(rows.MIDTERM) : null,
+      finals: rows.FINALS ? view(rows.FINALS) : null,
+      overall: { ...view(rows.OVERALL), periods: { MIDTERM: rows.MIDTERM ? view(rows.MIDTERM) : null, FINALS: rows.FINALS ? view(rows.FINALS) : null } },
+    },
+  };
 }
 
 /** All of a student's grades across the instructor's classes (student detail page). */

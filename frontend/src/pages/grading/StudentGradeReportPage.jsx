@@ -1,26 +1,16 @@
 import { useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Calculator, Download, Printer, RefreshCw } from 'lucide-react';
-import { useStudentGrade, useRecalculateStudent } from '../../hooks/useGrading';
+import { ArrowLeft, Calculator, Download, Printer, RefreshCw, Share2 } from 'lucide-react';
+import { useStudentGrade, useRecalculateStudent, useGradeShare } from '../../hooks/useGrading';
 import { exportStudentReport } from '../../services/gradingApi';
 import { useToast } from '../../components/common/Toast';
 import { SEMESTER_LABELS } from '../../context/ClassContext';
 import Spinner from '../../components/common/Spinner';
 import { ErrorState, Skeleton } from '../../components/common/States';
-import GradeBreakdown from '../../components/grading/GradeBreakdown';
-import GradeStatusBadge from '../../components/grading/GradeStatusBadge';
-import GradeChip from '../../components/grading/GradeChip';
+import GradeReportBody from '../../components/grading/GradeReportBody';
+import ShareGradeDialog, { isSharing } from '../../components/grading/ShareGradeDialog';
 import PrintHeader from '../../components/grading/PrintHeader';
-import { formatPercentFixed, formatDateOnly } from '../../utils/format';
 import { GRADING_TABS } from './GradingPage';
-
-const STATUS_TEXT = {
-  COMPLETE: 'Complete',
-  INCOMPLETE: 'Incomplete (INC)',
-  NOT_COMPUTABLE: 'Not computable yet',
-  DROPPED: 'Dropped (DRP)',
-  INC_LAPSED: 'INC lapsed — final grade 5.0',
-};
 
 /** Long enough to see the animation even when the server answers at once. */
 const MIN_CALCULATING_MS = 900;
@@ -50,6 +40,10 @@ export default function StudentGradeReportPage() {
   const { data, isPending, error, refetch } = useStudentGrade(period, classId, studentId);
   const recalc = useRecalculateStudent();
   const [calculating, setCalculating] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  // Only to mark the button while the student can view the sheet; the dialog shows the details.
+  const shareState = useGradeShare(classId, studentId, { enabled: Boolean(data) });
+  const shared = isSharing(shareState.data?.share);
 
   const backLink = `/grading${period === 'midterm' ? '' : `?period=${period}`}`;
 
@@ -126,13 +120,20 @@ export default function StudentGradeReportPage() {
         </div>
       </div>
 
-      <nav className="evsu-segmented mb-3 no-print" aria-label="Report period">
-        {GRADING_TABS.map((tab) => (
-          <Link key={tab.value} to={`/grading/${tab.value}/student/${studentId}?classId=${classId}`} className="evsu-segmented__link" aria-current={tab.value === period ? 'page' : undefined}>
-            {tab.label}
-          </Link>
-        ))}
-      </nav>
+      <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3 no-print">
+        <nav className="evsu-segmented" aria-label="Report period">
+          {GRADING_TABS.map((tab) => (
+            <Link key={tab.value} to={`/grading/${tab.value}/student/${studentId}?classId=${classId}`} className="evsu-segmented__link" aria-current={tab.value === period ? 'page' : undefined}>
+              {tab.label}
+            </Link>
+          ))}
+        </nav>
+        <button type="button" className="btn btn-light d-inline-flex align-items-center gap-2" onClick={() => setSharing(true)}>
+          {shared ? <span className="evsu-share-dot" aria-hidden="true" /> : <Share2 size={16} aria-hidden="true" />}
+          {shared ? 'Shared with student' : 'Share with student'}
+        </button>
+      </div>
+      <ShareGradeDialog open={sharing} onClose={() => setSharing(false)} classId={classId} studentId={studentId} studentName={s.fullName} />
 
       <section className="evsu-card p-3 p-md-4 mb-3 evsu-avoid-break" aria-labelledby="report-student">
         <div className="d-flex flex-wrap justify-content-between gap-3">
@@ -150,77 +151,7 @@ export default function StudentGradeReportPage() {
         </div>
       </section>
 
-      {calculating ? (
-        <CalculatingPanel name={s.fullName} />
-      ) : (
-      <>
-      {period === 'overall' ? (
-        <>
-          {['MIDTERM', 'FINALS'].map((p) => (
-            <GradeBreakdown key={p} result={g.periods?.[p]} title={`${p === 'MIDTERM' ? 'Midterm' : 'Finals'} grade (${config.periodWeights[p]}% of the final grade)`} />
-          ))}
-          <section className="evsu-card p-3 p-md-4 mb-3 evsu-avoid-break" aria-label="Final grade computation">
-            <h3 className="h6 mb-3">Final grade computation</h3>
-            <div className="evsu-table-wrap">
-              <table className="table evsu-table mb-0">
-                <caption className="visually-hidden">Final grade computation</caption>
-                <thead>
-                  <tr><th scope="col">Period</th><th scope="col" className="text-end">Percentage</th><th scope="col" className="text-end">Weight</th><th scope="col" className="text-end">Weighted</th></tr>
-                </thead>
-                <tbody>
-                  {['MIDTERM', 'FINALS'].map((p) => {
-                    const pr = g.current ? g.periodResults?.[p] : null;
-                    return (
-                      <tr key={p}>
-                        <th scope="row" data-label="Period">{p === 'MIDTERM' ? 'Midterm' : 'Finals'}</th>
-                        <td data-label="Percentage" className="text-end">{formatPercentFixed(pr?.percentage)}</td>
-                        <td data-label="Weight" className="text-end">{config.periodWeights[p]}%</td>
-                        <td data-label="Weighted" className="text-end fw-semibold">{pr?.weightedContribution != null ? Number(pr.weightedContribution.toFixed(2)) : '—'}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        </>
-      ) : (
-        <GradeBreakdown result={g} title={`${periodLabel} grade`} />
-      )}
-
-      <section className="evsu-card p-3 p-md-4 evsu-avoid-break" aria-labelledby="final-result">
-        <h3 id="final-result" className="h6 mb-3">{period === 'overall' ? 'Final result' : `${periodLabel} result`}</h3>
-        {!g.current ? (
-          <p className="mb-0"><GradeStatusBadge result={g} /> <span className="ms-2">This grade is being recalculated and will appear once it is current.</span></p>
-        ) : (
-          <dl className="evsu-details mb-0">
-            <div><dt>Computed percentage</dt><dd className="h5 mb-0">{formatPercentFixed(g.percentage)}</dd></div>
-            <div><dt>Rounded percentage</dt><dd>{g.roundedPercent === null ? '—' : `${g.roundedPercent}%`}</dd></div>
-            <div><dt>Grade equivalent</dt><dd className="mb-0 mt-1"><GradeChip size="lg" grade={g.grade} /></dd></div>
-            <div><dt>Remarks</dt><dd><GradeStatusBadge result={g} passingGrade={config.passingGrade} /></dd></div>
-            <div><dt>Completion status</dt><dd>{STATUS_TEXT[g.completionStatus] ?? g.completionStatus}</dd></div>
-            {g.incDeadline && ['INCOMPLETE', 'INC_LAPSED'].includes(g.completionStatus) && (
-              <div><dt>INC completion deadline</dt><dd>{formatDateOnly(g.incDeadline.slice(0, 10))}</dd></div>
-            )}
-          </dl>
-        )}
-        {g.current && g.missingItems?.length > 0 && g.completionStatus !== 'DROPPED' && (
-          <div className="mt-3">
-            <p className="fw-semibold small mb-1">Lacking requirements</p>
-            <ul className="small mb-0">
-              {g.missingItems.map((m) => (
-                <li key={`${m.period ?? ''}-${m.id}`}>{m.period ? `${m.period === 'MIDTERM' ? 'Midterm' : 'Finals'} — ` : ''}{m.title} ({m.componentLabel ?? m.component})</li>
-              ))}
-            </ul>
-          </div>
-        )}
-        <p className="small text-muted-evsu mt-3 mb-0">
-          Computed by the EVSU grading engine using criteria version {config.version}
-          {g.lastCalculatedAt ? ` on ${new Date(g.lastCalculatedAt).toLocaleString('en-PH')}` : ''}. The percentage is rounded half-up to a whole number before conversion to the 1.0–5.0 scale.
-        </p>
-      </section>
-      </>
-      )}
+      {calculating ? <CalculatingPanel name={s.fullName} /> : <GradeReportBody grade={g} config={config} period={period} />}
     </>
   );
 }

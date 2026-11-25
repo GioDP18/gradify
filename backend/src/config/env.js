@@ -95,6 +95,20 @@ export function loadConfig(source = process.env) {
     if (seedAdmin.username && !/^[a-z0-9._-]{3,40}$/.test(seedAdmin.username)) errors.push('SEED_ADMIN_USERNAME must be 3–40 letters, numbers, dots, dashes, or underscores');
   }
 
+  // Outgoing email (optional): used to send a student the link to their grading sheet.
+  // Off unless SMTP_HOST is set; everything else in the app works without it.
+  const smtpHost = source.SMTP_HOST?.trim() || '';
+  const smtpUser = source.SMTP_USER?.trim() || '';
+  const smtpPort = toInt(source, 'SMTP_PORT', 587, { min: 1, max: 65535 }, errors);
+  const mailFrom = source.MAIL_FROM?.trim() || (smtpUser.includes('@') ? `Gradify <${smtpUser}>` : '');
+  if (smtpHost) {
+    if (!mailFrom) errors.push('MAIL_FROM is required when SMTP_HOST is set (e.g. Gradify <grades@example.edu>)');
+    if (smtpUser && !source.SMTP_PASS) errors.push('SMTP_PASS is required when SMTP_USER is set');
+  }
+  const mail = smtpHost
+    ? Object.freeze({ host: smtpHost, port: smtpPort, secure: toBool(source, 'SMTP_SECURE', smtpPort === 465, errors), user: smtpUser || null, pass: source.SMTP_PASS || null, from: mailFrom })
+    : null;
+
   const config = {
     nodeEnv,
     isProduction: nodeEnv === 'production',
@@ -126,6 +140,7 @@ export function loadConfig(source = process.env) {
     loginIpRateLimit: toInt(source, 'LOGIN_IP_RATE_LIMIT', 50, { min: 0, max: 10000 }, errors),
     // QR self-enrollment submissions per client IP per class link per 15 minutes (0 disables it).
     selfEnrollIpLimit: toInt(source, 'SELF_ENROLL_IP_LIMIT', 150, { min: 0, max: 10000 }, errors),
+    mail,
     // Audit-log retention in days (0 = keep forever). See services/auditRetention.service.js.
     auditRetention: Object.freeze({
       ipDays: toInt(source, 'AUDIT_IP_RETENTION_DAYS', 90, { min: 0, max: 36500 }, errors),

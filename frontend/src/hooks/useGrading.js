@@ -6,6 +6,7 @@ export const gradingKeys = {
   sheet: (period, classId) => ['grading', 'sheet', period, classId],
   student: (period, classId, studentId) => ['grading', 'student', period, classId, studentId],
   studentAll: (studentId) => ['grading', 'student-all', studentId],
+  share: (classId, studentId) => ['grading-share', classId, studentId],
   config: () => ['grading', 'config'],
   versions: () => ['grading', 'versions'],
 };
@@ -32,6 +33,30 @@ export function useStudentGrade(period, classId, studentId) {
 
 export function useStudentGradesAcrossClasses(studentId) {
   return useQuery({ queryKey: gradingKeys.studentAll(studentId), queryFn: () => gradingApi.getStudentGradesAcrossClasses(studentId), enabled: Boolean(studentId), staleTime: 0 });
+}
+
+/** Whether (and until when) a student can view their own grading sheet for a class. */
+export function useGradeShare(classId, studentId, { enabled = true } = {}) {
+  return useQuery({
+    queryKey: gradingKeys.share(classId, studentId),
+    queryFn: () => gradingApi.getGradeShare(classId, studentId),
+    enabled: Boolean(enabled && classId && studentId),
+    staleTime: 0,
+  });
+}
+
+/** Start or re-time the share, stop it, or email the link; each updates the cached state from the reply. */
+export function useGradeShareActions(classId, studentId) {
+  const queryClient = useQueryClient();
+  const store = (result) => {
+    queryClient.setQueryData(gradingKeys.share(classId, studentId), result);
+    return result;
+  };
+  return {
+    set: (durationHours, scope) => gradingApi.setGradeShare(classId, studentId, durationHours, scope).then(store),
+    stop: () => gradingApi.stopGradeShare(classId, studentId).then(store),
+    email: () => gradingApi.emailGradeShare(classId, studentId).then(store),
+  };
 }
 
 export function useGradingConfiguration() {

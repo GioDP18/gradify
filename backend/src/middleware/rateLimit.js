@@ -73,6 +73,19 @@ export const selfEnrollLimiter = rateLimit({
   handler: (req, res, next) => next(ApiError.tooManyRequests('Too many enrollment attempts for this class from your network. Please wait 15 minutes and try again.')),
 });
 
+/** Emails sent to students (grading sheet links), per signed-in instructor: 60 per 15 minutes. */
+export const studentEmailLimiter = rateLimit({
+  windowMs: WINDOW_MS,
+  limit: 60,
+  skip: () => env.isTest,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  passOnStoreError: true,
+  store: new MongoRateLimitStore({ prefix: 'student-email' }),
+  keyGenerator: (req) => String(req.user?.id ?? '(anonymous)'),
+  handler: (req, res, next) => next(ApiError.tooManyRequests('Too many emails sent in a short time. Please wait 15 minutes and try again.')),
+});
+
 /**
  * Re-entering the current password on the profile page (per signed-in user). Only failed
  * attempts count, so a stolen access token cannot be used to guess the password.

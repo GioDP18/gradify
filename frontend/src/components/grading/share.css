@@ -1,0 +1,63 @@
+/* Share grading sheet dialog */
+.evsu-share__status {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.75rem 0.9rem;
+  margin-bottom: 1rem;
+  border-radius: var(--g-radius-tile);
+  border: 1px solid var(--g-rule);
+  background: var(--g-sunken);
+}
+.evsu-share__status svg {
+  flex: none;
+  margin-top: 0.15rem;
+}
+.evsu-share__status.is-on {
+  border-color: rgba(31, 122, 77, 0.3);
+  background: rgba(31, 122, 77, 0.08);
+}
+.evsu-share__status.is-on svg {
+  color: #1f7a4d;
+}
+.evsu-share__status.is-ended svg {
+  color: var(--g-maroon);
+}
+/* Five choices: let them wrap into rows on a phone instead of overflowing the dialog. */
+.evsu-share__durations {
+  display: flex;
+  flex-wrap: wrap;
+}
+.evsu-share__durations button {
+  flex: 1 1 auto;
+  white-space: nowrap;
+}
+.evsu-share__send {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--g-rule);
+}
+.evsu-share__send label {
+  display: block;
+}
+
+.evsu-share__problem {
+  margin-top: 0.75rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: var(--g-radius-tile);
+  border: 1px solid rgba(138, 18, 24, 0.2);
+  background: rgba(138, 18, 24, 0.05);
+}
+.evsu-share__problem svg {
+  color: var(--g-maroon);
+  vertical-align: -2px;
+}
+
+/* The trigger on the report page shows a dot while the sheet is being shared. */
+.evsu-share-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: #1f7a4d;
+  box-shadow: 0 0 0 3px rgba(31, 122, 77, 0.18);
+}

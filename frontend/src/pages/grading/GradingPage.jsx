@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Calculator, Download, Printer, RefreshCw, School, Settings2, TriangleAlert } from 'lucide-react';
+import { Calculator, Download, Printer, RefreshCw, School, Settings2, Share2, TriangleAlert } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useClassContext, formatClassLabel, formatTerm } from '../../context/ClassContext';
 import { useClassGrades, useRecalculateClass } from '../../hooks/useGrading';
@@ -16,6 +16,7 @@ import GradeStatusBadge from '../../components/grading/GradeStatusBadge';
 import GradeChip from '../../components/grading/GradeChip';
 import { CHART, bucketFill } from '../../config/chartTheme';
 import PrintHeader from '../../components/grading/PrintHeader';
+import BulkShareDialog from '../../components/grading/BulkShareDialog';
 import { formatPercentFixed } from '../../utils/format';
 import Segmented from '../../components/common/Segmented';
 
@@ -72,6 +73,11 @@ export default function GradingPage() {
   const [statusFilter, setStatusFilter] = useState(() => (STATUS_FILTERS.some((f) => f.value === params.get('status')) ? params.get('status') : ''));
   const [sort, setSort] = useState({ field: 'fullName', order: 'asc' });
   const [exporting, setExporting] = useState(null);
+  // Students ticked on the sheet, to share their grading sheets with them in one go.
+  const [selected, setSelected] = useState(() => new Set());
+  const [sharing, setSharing] = useState(false);
+  const classId = activeClass?.id;
+  useEffect(() => setSelected(new Set()), [classId]);
 
   const { data, isPending, isFetching, isPlaceholderData, error, refetch } = useClassGrades(period, activeClass?.id);
   // Switching to a period (or class) that is not loaded yet: show the skeleton, not the previous sheet.
@@ -139,6 +145,9 @@ export default function GradingPage() {
       toast.error(err.message);
     }
   };
+
+  // Only students still on the sheet count (one removed from the class drops out of the selection).
+  const selectedStudents = (data?.rows ?? []).filter((r) => selected.has(r.studentId));
 
   const pct = (r, value) => (r.current ? formatPercentFixed(value) : '—');
 
@@ -298,8 +307,17 @@ export default function GradingPage() {
             <select className="form-select w-auto" aria-label="Filter by result" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
               {STATUS_FILTERS.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
             </select>
+            {selectedStudents.length > 0 && (
+              <>
+                <button type="button" className="btn btn-primary d-inline-flex align-items-center gap-2" onClick={() => setSharing(true)}>
+                  <Share2 size={16} aria-hidden="true" /> Share with {selectedStudents.length} student{selectedStudents.length === 1 ? '' : 's'}
+                </button>
+                <button type="button" className="btn btn-sm btn-link" onClick={() => setSelected(new Set())}>Clear selection</button>
+              </>
+            )}
             {isFetching && !loading && <Spinner size="sm" label="Refreshing grades" className="text-muted-evsu" />}
           </div>
+          <BulkShareDialog open={sharing} onClose={() => setSharing(false)} classId={classId} students={selectedStudents} emailAvailable={Boolean(data?.emailAvailable)} />
 
           <DataTable
             caption={`${GRADING_TABS.find((t) => t.value === period).label} grades`}
@@ -307,6 +325,9 @@ export default function GradingPage() {
             rows={rows}
             loading={loading}
             rowKey={(r) => r.studentId}
+            rowLabel={(r) => r.fullName}
+            selectedIds={selected}
+            onSelectionChange={setSelected}
             sort={sort}
             onSortChange={(field) => setSort((s) => ({ field, order: s.field === field && s.order === 'asc' ? 'desc' : 'asc' }))}
             rowClassName={(r) => (r.completionStatus === 'DROPPED' ? 'text-muted-evsu' : '')}
