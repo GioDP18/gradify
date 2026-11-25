@@ -1,5 +1,6 @@
 import { Link, NavLink } from 'react-router-dom';
 import { LogOut, X } from 'lucide-react';
+import ActionButton from '../common/ActionButton';
 import { navGroupsFor } from './navigation';
 import { useAuth } from '../../context/AuthContext';
 import emblem from '../../assets/brand/gradify-emblem.webp';
@@ -58,10 +59,9 @@ export default function Sidebar({ id, open, onClose, onLogout }) {
       </nav>
 
       <div className="evsu-sidebar__footer">
-        <button type="button" className="evsu-nav-link w-100 border-0 bg-transparent" onClick={onLogout}>
-          <LogOut size={18} aria-hidden="true" />
+        <ActionButton className="evsu-nav-link w-100 border-0 bg-transparent" onClick={onLogout} icon={LogOut} iconSize={18} spinnerClassName="">
           <span>Logout</span>
-        </button>
+        </ActionButton>
       </div>
     </aside>
   );

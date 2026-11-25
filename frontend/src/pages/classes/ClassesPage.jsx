@@ -8,6 +8,7 @@ import { useToast } from '../../components/common/Toast';
 import ClassFormModal from '../../components/classes/ClassFormModal';
 import QrEnrollmentDialog from '../../components/classes/QrEnrollmentDialog';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
+import ActionButton from '../../components/common/ActionButton';
 import StatusBadge from '../../components/common/StatusBadge';
 import { EmptyState, ErrorState, SkeletonCards } from '../../components/common/States';
 import Segmented from '../../components/common/Segmented';
@@ -146,14 +147,15 @@ export default function ClassesPage() {
                       </button>
                     </>
                   ) : (
-                    <button
-                      type="button"
+                    <ActionButton
                       className="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1"
                       onClick={() => handleRestore(cls)}
                       disabled={restoreClass.isPending}
+                      icon={ArchiveRestore}
+                      iconSize={14}
                     >
-                      <ArchiveRestore size={14} aria-hidden="true" /> Restore
-                    </button>
+                      Restore
+                    </ActionButton>
                   )}
                 </div>
               </li>

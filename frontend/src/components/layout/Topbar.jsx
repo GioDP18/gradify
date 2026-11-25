@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useMatches } from 'react-router-dom';
 import { ChevronDown, ChevronRight, LogOut, Menu, UserRoundCog } from 'lucide-react';
+import ActionButton from '../common/ActionButton';
 import { useAuth } from '../../context/AuthContext';
 import ClassSwitcher from './ClassSwitcher';
 import Avatar from '../common/Avatar';
@@ -48,9 +49,9 @@ function AccountMenu({ onLogout }) {
           <Link to="/settings/profile" role="menuitem" className="evsu-menu__item text-reset text-decoration-none" onClick={() => setOpen(false)}>
             <UserRoundCog size={16} aria-hidden="true" /> Manage profile
           </Link>
-          <button type="button" role="menuitem" className="evsu-menu__item" onClick={onLogout}>
-            <LogOut size={16} aria-hidden="true" /> Log out
-          </button>
+          <ActionButton role="menuitem" className="evsu-menu__item" onClick={onLogout} icon={LogOut} spinnerClassName="">
+            {' '}Log out
+          </ActionButton>
         </div>
       )}
     </div>

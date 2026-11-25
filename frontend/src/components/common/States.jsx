@@ -1,4 +1,5 @@
 import { Inbox, TriangleAlert } from 'lucide-react';
+import ActionButton from './ActionButton';
 
 export function EmptyState({ icon: Icon = Inbox, title, description, action }) {
   return (
@@ -18,9 +19,9 @@ export function ErrorState({ title = 'Something went wrong', error, onRetry }) {
       <h3 className="h6 mb-1">{title}</h3>
       <p className="text-muted-evsu small mb-3">{error?.message ?? 'Please try again.'}</p>
       {onRetry && (
-        <button type="button" className="btn btn-outline-primary btn-sm" onClick={onRetry}>
+        <ActionButton className="btn btn-outline-primary btn-sm" onClick={onRetry}>
           Try again
-        </button>
+        </ActionButton>
       )}
     </div>
   );
