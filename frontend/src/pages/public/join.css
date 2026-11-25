@@ -1,11 +1,16 @@
-/* Public QR self-enrollment page: one card on a soft maroon-to-cream background. */
+/*
+ * Public QR self-enrollment page. Students open it on a phone, so the phone layout is the main
+ * one: the campus in EVSU maroon on top, and one white sheet carrying the logo, the class and a
+ * short numbered form with large touch targets.
+ */
 .evsu-join {
   position: relative;
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: clamp(1.25rem, 6vh, 3.5rem) 1rem 2.5rem;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(5rem, 13vh, 7.5rem) 1rem 1.75rem;
   overflow-x: hidden;
   isolation: isolate;
   /* Below the campus band: warm cream with soft gold and maroon glows, never a flat field. */
@@ -19,7 +24,7 @@
 .evsu-join__hero {
   position: absolute;
   inset: 0 0 auto 0;
-  height: clamp(260px, 42vh, 400px);
+  height: clamp(280px, 44vh, 420px);
   z-index: -1;
   overflow: hidden;
   background: #6a0911;
@@ -52,29 +57,161 @@
   height: clamp(48px, 9vw, 110px);
 }
 
+/* ── The sheet ─────────────────────────────────────────────────────────────── */
 .evsu-join__card {
+  position: relative;
   width: 100%;
-  max-width: 560px;
-  padding: 1.25rem 1.25rem 1.5rem;
-  border-radius: 20px;
+  max-width: 540px;
+  padding: 4.4rem 2rem 2rem;
+  border-radius: 28px;
   background: #ffffff;
-  box-shadow: 0 18px 44px -18px rgba(70, 35, 25, 0.45);
+  box-shadow:
+    0 34px 64px -30px rgba(70, 14, 18, 0.6),
+    0 6px 18px rgba(70, 35, 25, 0.08);
+  animation: evsu-join-rise 520ms var(--g-ease) both;
+}
+/* The logo sits in a gold-ringed medallion, half above the sheet. */
+.evsu-join__badge {
+  position: absolute;
+  top: -54px;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 108px;
+  height: 108px;
+  margin-left: -54px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow:
+    0 0 0 4px var(--g-gold),
+    0 0 0 9px rgba(255, 255, 255, 0.28),
+    0 14px 26px -10px rgba(60, 10, 14, 0.6);
 }
 .evsu-join__logo {
   display: block;
-  width: 130px;
+  width: 88px;
   height: auto;
-  margin: -0.5rem auto -0.5rem;
 }
+.evsu-join__foot {
+  margin: 1.4rem 0 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--g-ink-faint);
+  text-align: center;
+}
+
+/* ── The class ─────────────────────────────────────────────────────────────── */
 .evsu-join__class {
-  margin-bottom: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--g-rule);
+  margin-bottom: 1.25rem;
   text-align: center;
 }
 .evsu-join__title {
-  margin-bottom: 0.25rem;
-  font-size: 1.45rem;
+  margin: 0 0 0.35rem;
+  color: var(--g-maroon);
+  line-height: 1.15;
+}
+.evsu-join__title-lead {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-family: var(--g-font);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--g-warning);
+}
+.evsu-join__title-code {
+  display: block;
+  font-size: clamp(1.6rem, 6.4vw, 2rem);
+  text-wrap: balance;
+}
+.evsu-join__subject {
+  margin: 0;
+  font-size: 1.02rem;
+  color: var(--g-ink);
+  text-wrap: balance;
+}
+.evsu-join__meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+  margin: 0.85rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.evsu-join__meta li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: var(--g-sunken);
+  border: 1px solid var(--g-rule);
+  font-size: 0.84rem;
+  color: var(--g-ink-soft);
+}
+.evsu-join__meta svg {
+  flex: none;
+  color: var(--g-maroon);
+}
+
+.evsu-join__tip {
+  display: flex;
+  gap: 0.6rem;
+  margin: 0 0 1.4rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 14px;
+  background: var(--g-gold-tint);
+  font-size: 0.86rem;
+  line-height: 1.45;
+  color: #5b3d00;
+}
+.evsu-join__tip svg {
+  flex: none;
+  margin-top: 0.1rem;
+  color: var(--g-warning);
+}
+
+/* ── The form ──────────────────────────────────────────────────────────────── */
+.evsu-join__group {
+  min-width: 0;
+  margin: 0 0 0.6rem;
+  padding: 0;
+  border: 0;
+}
+.evsu-join__group legend {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  float: none;
+  width: 100%;
+  margin: 0 0 0.75rem;
+  font-family: var(--g-font);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--g-ink-soft);
+}
+/* A hairline runs from the group title to the edge of the sheet. */
+.evsu-join__group legend::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--g-rule);
+}
+.evsu-join__step {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: var(--g-maroon-tint);
+  font-size: 0.78rem;
+  letter-spacing: 0;
   color: var(--g-maroon);
 }
 .evsu-join__pair,
@@ -88,47 +225,202 @@
 .evsu-join__triple {
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 0.8fr);
 }
+.evsu-join .form-label {
+  margin-bottom: 0.35rem;
+  font-size: 0.9rem;
+}
 .evsu-join .form-control,
 .evsu-join .form-select {
+  min-height: 50px;
+  padding-inline: 0.9rem;
+  border-radius: 12px;
+  border-color: var(--g-rule-strong);
+  background-color: #fdfbf9;
   font-size: 16px; /* stops phones from zooming into the field */
+}
+.evsu-join .form-select {
+  padding-right: 2.25rem;
+}
+.evsu-join .form-control:focus,
+.evsu-join .form-select:focus {
+  background-color: #ffffff;
+  border-color: var(--g-maroon);
+  box-shadow: 0 0 0 4px rgba(138, 18, 24, 0.12);
+}
+.evsu-join .form-control.is-invalid,
+.evsu-join .form-select.is-invalid {
+  border-color: var(--g-danger);
+  background-color: #fffafa;
+}
+.evsu-join__submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 54px;
+  margin-top: 0.5rem;
+  border-radius: 14px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  background-image: linear-gradient(180deg, #9a1820 0%, var(--g-maroon-hover) 100%);
+  box-shadow: 0 14px 24px -14px rgba(116, 6, 13, 0.85);
+  transition: transform var(--g-transition), box-shadow var(--g-transition);
+}
+.evsu-join__submit svg {
+  transition: transform var(--g-transition);
+}
+.evsu-join__submit:hover:not(:disabled) svg {
+  transform: translateX(3px);
+}
+.evsu-join__submit:active:not(:disabled) {
+  transform: scale(0.985);
+  box-shadow: 0 8px 16px -12px rgba(116, 6, 13, 0.85);
+}
+
+/* ── Status messages: loading, link not valid, closed, enrolled ────────────── */
+.evsu-join__loading {
+  padding: 2.5rem 0 1.5rem;
+  text-align: center;
 }
 .evsu-join__notice {
   display: grid;
   justify-items: center;
-  gap: 0.35rem;
-  padding: 1.5rem 0.5rem 0.5rem;
+  gap: 0.4rem;
+  padding: 0.75rem 0.25rem 0.5rem;
   text-align: center;
   color: var(--g-ink);
 }
-.evsu-join__notice > svg {
+.evsu-join__class + .evsu-join__notice {
+  margin-top: 0.25rem;
+  padding: 1.5rem 1rem;
+  border-radius: 18px;
+  background: var(--g-sunken);
+}
+.evsu-join__notice-icon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 0.35rem;
+  border-radius: 50%;
+  background: var(--g-maroon-tint);
   color: var(--g-maroon);
 }
-.evsu-join__notice.is-success > svg {
+.evsu-join__notice.is-success .evsu-join__notice-icon {
+  background: var(--g-success-tint);
+  color: var(--g-success);
+  animation: evsu-join-pop 520ms var(--g-ease) both;
+}
+.evsu-join__notice-title {
+  margin: 0;
+  font-size: 1.45rem;
+  color: var(--g-ink);
+}
+.evsu-join__notice.is-success .evsu-join__notice-title {
+  font-size: 1.7rem;
   color: var(--g-success);
 }
-@media (max-width: 479.98px) {
-  .evsu-join__pair,
-  .evsu-join__triple {
-    grid-template-columns: minmax(0, 1fr);
-  }
+.evsu-join__notice p {
+  max-width: 34ch;
+  color: var(--g-ink-soft);
 }
-/* Phones: a taller campus band with some of it showing above the card. */
-@media (max-width: 575.98px) {
-  .evsu-join {
-    padding-top: 5.5rem;
-  }
-  .evsu-join__hero {
-    height: 330px;
-  }
+/* What was recorded, as a small receipt. */
+.evsu-join__receipt {
+  width: 100%;
+  margin: 0.9rem 0 0.25rem;
+  padding: 0.35rem 1rem;
+  border-radius: 16px;
+  border: 1px dashed var(--g-rule-strong);
+  background: var(--g-sunken);
+  text-align: left;
+}
+.evsu-join__receipt > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.6rem 0;
+}
+.evsu-join__receipt > div + div {
+  border-top: 1px solid var(--g-rule);
+}
+.evsu-join__receipt dt {
+  flex: none;
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--g-ink-soft);
+}
+.evsu-join__receipt dd {
+  margin: 0;
+  font-weight: 700;
+  text-align: right;
+  overflow-wrap: anywhere;
 }
 
 /* "Is this the right class?" — shown when course / year / section differ from the class */
 .evsu-join__mismatch {
-  padding: 0.9rem 1rem;
-  border-radius: 14px;
+  margin-top: 0.5rem;
+  padding: 1rem;
+  border-radius: 16px;
   background: var(--g-warning-tint);
   color: #5b3d00;
 }
 .evsu-join__mismatch .btn {
   flex: 1 1 10rem;
+  min-height: 48px;
+  border-radius: 12px;
+}
+
+/* ── Phones ────────────────────────────────────────────────────────────────── */
+@media (max-width: 575.98px) {
+  .evsu-join {
+    padding: 5.25rem 0.75rem 1.5rem;
+  }
+  .evsu-join__hero {
+    height: 300px;
+  }
+  .evsu-join__card {
+    padding: 4.6rem 1.15rem 1.4rem;
+    border-radius: 26px;
+  }
+}
+@media (max-width: 479.98px) {
+  .evsu-join__pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* Course on its own line; the two short fields share the next one. */
+  .evsu-join__triple {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .evsu-join__triple > :first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@keyframes evsu-join-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+@keyframes evsu-join-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  60% {
+    transform: scale(1.08);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .evsu-join__card,
+  .evsu-join__notice.is-success .evsu-join__notice-icon {
+    animation: none;
+  }
+  .evsu-join__submit,
+  .evsu-join__submit svg {
+    transition: none;
+  }
 }
