@@ -86,8 +86,6 @@ export function loadConfig(source = process.env) {
     isProduction: nodeEnv === 'production',
     isDevelopment: nodeEnv === 'development',
     isTest: nodeEnv === 'test',
-    // Stack traces in error responses: local development only, never on a hosted deployment.
-    exposeErrorStacks: nodeEnv === 'development' && !source.VERCEL,
     port: toInt(source, 'PORT', 5000, { min: 1, max: 65535 }, errors),
     trustProxy: toInt(source, 'TRUST_PROXY', 0, { min: 0, max: 10 }, errors),
     mongodb: {

@@ -26,7 +26,7 @@ describe('error handling', () => {
     expect(res.status).toBe(404);
     expect(res.body).toMatchObject({
       success: false,
-      error: { code: 'NOT_FOUND', message: 'Route GET /api/does-not-exist not found' },
+      error: { code: 'NOT_FOUND', message: 'Not found.' },
     });
     expect(res.body.error.requestId).toBeTypeOf('string');
   });

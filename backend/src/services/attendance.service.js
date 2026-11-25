@@ -324,7 +324,7 @@ export async function updateSessionRecords(instructorId, sessionId, { revision, 
  * attendanceRate uses the official attendance formula from the grading calculator.
  */
 export async function getSummary(instructorId, { classId, period, studentId }) {
-  if (!classId && !studentId) throw ApiError.validation([{ field: 'classId', message: 'Provide classId or studentId' }]);
+  if (!classId && !studentId) throw ApiError.validation([{ field: 'classId', message: 'Choose a class or a student.' }]);
   const match = {};
   if (classId) {
     await getOwnedClass(instructorId, classId);

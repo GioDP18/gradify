@@ -1,6 +1,7 @@
 import { parse } from 'csv-parse/sync';
 import { Student } from '../models/Student.js';
 import { ApiError } from '../utils/ApiError.js';
+import { logger } from '../config/logger.js';
 import { runInTransaction } from '../utils/transaction.js';
 import { validateStudentInput, STUDENT_FIELDS } from '../validators/student.rules.js';
 import { recordAudit } from './audit.service.js';
@@ -40,7 +41,9 @@ function parseCsv(buffer) {
   try {
     records = parse(buffer, { bom: true, skip_empty_lines: true, relax_column_count: true, info: true, trim: true });
   } catch (error) {
-    throw ApiError.badRequest(`The file could not be read as CSV: ${error.message}`);
+    // The parser's own message stays in the log; the user gets the line to look at.
+    logger.warn('CSV import could not be parsed:', error.code, error.message);
+    throw ApiError.badRequest(error.lines ? `This file is not a valid CSV. Check line ${error.lines}.` : 'This file is not a valid CSV.');
   }
   if (records.length === 0) throw ApiError.badRequest('The CSV file is empty');
 
