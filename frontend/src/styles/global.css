@@ -1099,3 +1099,106 @@ a {
 .btn-primary:hover {
   box-shadow: none;
 }
+
+/* ── Whole-screen loading (checking the session, first page download) ──────── */
+.evsu-splash {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.1rem;
+  padding: 2rem 1rem;
+  background:
+    radial-gradient(42% 34% at 14% 18%, rgba(240, 183, 56, 0.16), transparent 70%),
+    radial-gradient(46% 38% at 88% 86%, rgba(138, 18, 24, 0.1), transparent 70%),
+    linear-gradient(180deg, #fbf8f4 0%, #f7f0e8 100%);
+  animation: evsu-splash-in 320ms var(--g-ease) both;
+}
+.evsu-splash__mark {
+  position: relative;
+  width: 132px;
+  height: 132px;
+  display: grid;
+  place-items: center;
+}
+/* A faint track with a gold arc travelling round it. */
+.evsu-splash__ring,
+.evsu-splash__ring::before {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+.evsu-splash__ring::before {
+  content: '';
+  border: 4px solid rgba(138, 18, 24, 0.1);
+}
+.evsu-splash__ring {
+  background: conic-gradient(from 0deg, rgba(240, 183, 56, 0) 0 45%, var(--g-gold) 88%, var(--g-maroon) 100%);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 4px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 4px));
+  animation: evsu-spin 1.15s linear infinite;
+}
+.evsu-splash__ring::before {
+  -webkit-mask: none;
+  mask: none;
+}
+.evsu-splash__disc {
+  display: grid;
+  place-items: center;
+  width: 108px;
+  height: 108px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 16px 30px -14px rgba(70, 14, 18, 0.5), 0 2px 6px rgba(70, 35, 25, 0.08);
+  animation: evsu-splash-breathe 2.2s ease-in-out infinite;
+}
+.evsu-splash__disc img {
+  width: 86px;
+  height: auto;
+}
+.evsu-splash__label {
+  margin: 0.4rem 0 0;
+  font-family: var(--g-font-display);
+  font-size: 1.1rem;
+  color: var(--g-maroon);
+}
+.evsu-splash__bar {
+  position: relative;
+  width: 168px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(138, 18, 24, 0.12);
+  overflow: hidden;
+}
+.evsu-splash__bar span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 42%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--g-maroon), var(--g-gold));
+  animation: evsu-splash-slide 1.3s var(--g-ease) infinite;
+}
+@keyframes evsu-splash-in {
+  from { opacity: 0; }
+}
+@keyframes evsu-splash-breathe {
+  50% { transform: scale(1.045); }
+}
+@keyframes evsu-splash-slide {
+  from { transform: translateX(-110%); }
+  to { transform: translateX(250%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .evsu-splash,
+  .evsu-splash__disc {
+    animation: none;
+  }
+  .evsu-splash__ring {
+    animation-duration: 3s;
+  }
+  .evsu-splash__bar span {
+    animation-duration: 3s;
+  }
+}

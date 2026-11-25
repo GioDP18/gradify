@@ -196,7 +196,7 @@ export default function AttendancePage() {
               caption={`${periodLabel(period)} attendance sessions`}
               columns={columns}
               rows={data?.items ?? []}
-              loading={sessionsQuery.isPending || refresh.busy}
+              loading={sessionsQuery.isPending || sessionsQuery.isPlaceholderData || refresh.busy}
               empty={
                 from || to ? (
                   <EmptyState title="No sessions in this date range" />
