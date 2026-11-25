@@ -28,6 +28,9 @@ export function useStudentGrade(period, classId, studentId) {
     queryFn: () => gradingApi.getStudentGrade(period, classId, studentId),
     enabled: Boolean(classId && studentId),
     staleTime: 0,
+    // While another period loads, the previous report stays available (isPlaceholderData), so the
+    // page can keep what does not change between periods: the student and the class.
+    placeholderData: keepPreviousData,
   });
 }
 

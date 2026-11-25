@@ -46,8 +46,10 @@ beforeEach(() => {
 describe('instructor: sharing a grading sheet with the student', () => {
   const openDialog = async (name = 'Share with student') => {
     renderApp('/grading/midterm/student/s1?classId=c1');
-    // The first render also downloads the page's code, which can take a moment.
-    await userEvent.click(await screen.findByRole('button', { name }, { timeout: 4000 }));
+    // Wait for the report itself: while it loads, the placeholder shows the same button, disabled.
+    // (The first render also downloads the page's code, which can take a moment.)
+    await screen.findByRole('heading', { name: 'Bautista, Ana' }, { timeout: 10000 });
+    await userEvent.click(await screen.findByRole('button', { name }));
     return screen.findByRole('dialog', { name: 'Share grading sheet' });
   };
 
