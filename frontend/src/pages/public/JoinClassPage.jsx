@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
-import { CircleAlert, CircleCheck, Lock, TriangleAlert } from 'lucide-react';
+import { ArrowRight, CalendarDays, CircleAlert, CircleCheck, Info, Lock, TriangleAlert, UserRound } from 'lucide-react';
 import { TextField, SelectField, applyServerErrors } from '../../components/common/FormField';
 import Spinner from '../../components/common/Spinner';
 import { SEMESTER_LABELS } from '../../context/ClassContext';
@@ -27,10 +27,28 @@ function Shell({ children }) {
         </svg>
       </div>
       <main className="evsu-join__card">
-        <img src={logo} alt="Gradify, EVSU Grading System" className="evsu-join__logo" width="560" height="560" />
+        <div className="evsu-join__badge">
+          <img src={logo} alt="Gradify, EVSU Grading System" className="evsu-join__logo" width="560" height="560" />
+        </div>
         {children}
       </main>
+      <p className="evsu-join__foot">Eastern Visayas State University</p>
     </div>
+  );
+}
+
+/** Round icon above a status message (link not valid, closed, enrolled). */
+function NoticeIcon({ icon: Icon }) {
+  return <span className="evsu-join__notice-icon"><Icon size={30} aria-hidden="true" /></span>;
+}
+
+/** A titled group of fields, numbered so a long form on a phone reads as a few short steps. */
+function Group({ step, title, children }) {
+  return (
+    <fieldset className="evsu-join__group">
+      <legend><span className="evsu-join__step" aria-hidden="true">{step}</span>{title}</legend>
+      {children}
+    </fieldset>
   );
 }
 
@@ -38,12 +56,17 @@ function ClassHeading({ info }) {
   const c = info.class;
   return (
     <header className="evsu-join__class">
-      <h1 className="evsu-join__title">Enroll in {c.subjectCode} · {c.section}</h1>
-      <p className="mb-0">{c.subjectTitle}</p>
-      <p className="mb-0">instructor : {info.instructor ? `${info.instructor}` : ''}</p>
-      <p className="small text-muted-evsu mb-0">
-        {SEMESTER_LABELS[c.semester] ?? c.semester}, SY {c.schoolYear}
-      </p>
+      <h1 className="evsu-join__title">
+        <span className="evsu-join__title-lead">Enroll in</span>{' '}
+        <span className="evsu-join__title-code">{c.subjectCode} · {c.section}</span>
+      </h1>
+      <p className="evsu-join__subject">{c.subjectTitle}</p>
+      <ul className="evsu-join__meta">
+        {info.instructor && (
+          <li><UserRound size={15} aria-hidden="true" /><span className="visually-hidden">Instructor: </span>{info.instructor}</li>
+        )}
+        <li><CalendarDays size={15} aria-hidden="true" />{SEMESTER_LABELS[c.semester] ?? c.semester}, SY {c.schoolYear}</li>
+      </ul>
     </header>
   );
 }
@@ -64,14 +87,14 @@ export default function JoinClassPage() {
   });
 
   if (info.isPending) {
-    return <Shell><div className="text-center py-4"><Spinner label="Loading the class…" /></div></Shell>;
+    return <Shell><div className="evsu-join__loading"><Spinner label="Loading the class…" /></div></Shell>;
   }
   if (info.error) {
     return (
       <Shell>
         <div className="evsu-join__notice" role="alert">
-          <CircleAlert size={28} aria-hidden="true" />
-          <h1 className="h5 mb-1">This link doesn&apos;t work</h1>
+          <NoticeIcon icon={CircleAlert} />
+          <h1 className="evsu-join__notice-title">This link doesn&apos;t work</h1>
           <p className="mb-0">{info.error.status === 404 ? info.error.message : 'The class could not be loaded. Check your connection and try again.'}</p>
         </div>
       </Shell>
@@ -82,11 +105,15 @@ export default function JoinClassPage() {
     return (
       <Shell>
         <div className="evsu-join__notice is-success" role="status">
-          <CircleCheck size={32} aria-hidden="true" />
-          <h1 className="h4 mb-1">You&apos;re enrolled</h1>
-          <p className="mb-0"><strong>{done.student.fullName}</strong> ({done.student.studentNumber})</p>
-          <p className="mb-0">{done.class.subjectCode} · {done.class.section}, {done.class.subjectTitle}</p>
-          <p className="small text-muted-evsu mt-2 mb-0">You can close this page.</p>
+          <NoticeIcon icon={CircleCheck} />
+          <h1 className="evsu-join__notice-title">You&apos;re enrolled</h1>
+          <dl className="evsu-join__receipt">
+            <div><dt>Student</dt><dd>{done.student.fullName}</dd></div>
+            <div><dt>Student number</dt><dd>{done.student.studentNumber}</dd></div>
+            <div><dt>Class</dt><dd>{done.class.subjectCode} · {done.class.section}</dd></div>
+            <div><dt>Subject</dt><dd>{done.class.subjectTitle}</dd></div>
+          </dl>
+          <p className="small mt-2 mb-0">You can close this page.</p>
         </div>
       </Shell>
     );
@@ -97,8 +124,8 @@ export default function JoinClassPage() {
       <Shell>
         <ClassHeading info={info.data} />
         <div className="evsu-join__notice" role="status">
-          <Lock size={28} aria-hidden="true" />
-          <h2 className="h5 mb-1">Enrollment is closed</h2>
+          <NoticeIcon icon={Lock} />
+          <h2 className="evsu-join__notice-title">Enrollment is closed</h2>
           <p className="mb-0">Your instructor isn&apos;t accepting enrollments for this class right now. Ask them when it opens.</p>
         </div>
       </Shell>
@@ -112,7 +139,6 @@ export default function JoinClassPage() {
       const body = Object.fromEntries(FIELDS.map((f) => [f, typeof values[f] === 'string' ? values[f].trim() : values[f]]));
       body.yearLevel = Number(body.yearLevel);
       if (!body.middleName) body.middleName = null;
-      if (!body.email) body.email = null;
       if (confirmMismatch) body.confirmMismatch = true;
       setDone(await publicApi.selfEnroll(token, body));
     } catch (error) {
@@ -137,24 +163,34 @@ export default function JoinClassPage() {
   return (
     <Shell>
       <ClassHeading info={info.data} />
-      <p className="small text-muted-evsu">Fill in your details exactly as in your school records. Each student number can enroll once.</p>
+      <p className="evsu-join__tip">
+        <Info size={17} aria-hidden="true" />
+        <span>Fill in your details exactly as in your school records. Each student number can enroll once.</span>
+      </p>
       {formError && <div className="alert alert-danger small" role="alert">{formError}</div>}
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
-        <TextField label="Student number" required autoComplete="off" autoCapitalize="characters" spellCheck="false" placeholder="e.g. 2024-10301"
-          error={errors.studentNumber?.message} {...register('studentNumber', required('student number'))} />
-        <div className="evsu-join__pair">
-          <TextField label="Last name" required autoComplete="family-name" error={errors.lastName?.message} {...register('lastName', required('last name'))} />
-          <TextField label="First name" required autoComplete="given-name" error={errors.firstName?.message} {...register('firstName', required('first name'))} />
-        </div>
-        <div className="evsu-join__pair">
+        <Group step="1" title="Your ID">
+          <TextField label="Student number" required autoComplete="off" autoCapitalize="characters" spellCheck="false" placeholder="e.g. 2024-10301"
+            error={errors.studentNumber?.message} {...register('studentNumber', required('student number'))} />
+        </Group>
+        <Group step="2" title="Your name">
+          <div className="evsu-join__pair">
+            <TextField label="Last name" required autoComplete="family-name" error={errors.lastName?.message} {...register('lastName', required('last name'))} />
+            <TextField label="First name" required autoComplete="given-name" error={errors.firstName?.message} {...register('firstName', required('first name'))} />
+          </div>
           <TextField label="Middle name" autoComplete="additional-name" error={errors.middleName?.message} {...register('middleName')} />
-          <TextField label="Email" type="email" autoComplete="email" error={errors.email?.message} hint="Optional" {...register('email')} />
-        </div>
-        <div className="evsu-join__triple">
-          <TextField label="Course" required placeholder="e.g. BSIT" error={errors.course?.message} {...register('course', required('course'))} />
-          <SelectField label="Year level" required options={YEAR_OPTIONS} placeholder="Select" error={errors.yearLevel?.message} {...register('yearLevel', required('year level'))} />
-          <TextField label="Section" required placeholder="e.g. A" error={errors.section?.message} {...register('section', required('section'))} />
-        </div>
+        </Group>
+        <Group step="3" title="Your class">
+          <div className="evsu-join__triple">
+            <TextField label="Course" required placeholder="e.g. BSIT" autoCapitalize="characters" error={errors.course?.message} {...register('course', required('course'))} />
+            <SelectField label="Year level" required options={YEAR_OPTIONS} placeholder="Select" error={errors.yearLevel?.message} {...register('yearLevel', required('year level'))} />
+            <TextField label="Section" required placeholder="e.g. A" autoCapitalize="characters" error={errors.section?.message} {...register('section', required('section'))} />
+          </div>
+        </Group>
+        <Group step="4" title="Contact">
+          <TextField label="Email" type="email" inputMode="email" autoComplete="email" required placeholder="name@example.com" error={errors.email?.message}
+            {...register('email', { validate: (v) => (v.trim() ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()) || 'Enter a valid email address.' : 'Enter your email.') })} />
+        </Group>
         {mismatch ? (
           <div className="evsu-join__mismatch" role="alert">
             <p className="fw-semibold mb-1 d-flex gap-2"><TriangleAlert size={18} className="flex-shrink-0 mt-1" aria-hidden="true" /> Are you irregular students?</p>
@@ -168,8 +204,8 @@ export default function JoinClassPage() {
             </div>
           </div>
         ) : (
-          <button type="submit" className="btn btn-primary w-100" disabled={isSubmitting}>
-            {isSubmitting ? <><Spinner size="sm" label="" /> Enrolling…</> : 'Enroll'}
+          <button type="submit" className="btn btn-primary evsu-join__submit" disabled={isSubmitting}>
+            {isSubmitting ? <><Spinner size="sm" label="" /> Enrolling…</> : <>Enroll <ArrowRight size={18} aria-hidden="true" /></>}
           </button>
         )}
       </form>

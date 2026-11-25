@@ -76,6 +76,7 @@ describe('student: the page the QR code opens (no sign-in)', () => {
     await userEvent.type(screen.getByLabelText(/Course/), 'BSIT');
     await userEvent.selectOptions(screen.getByLabelText(/Year level/), '1');
     await userEvent.type(screen.getByLabelText(/Section/), 'A');
+    await userEvent.type(screen.getByLabelText(/Email/), 'jose.rizal@evsu.edu.ph');
   }
 
   it('enrolls the student and confirms', async () => {
@@ -86,8 +87,18 @@ describe('student: the page the QR code opens (no sign-in)', () => {
     expect(screen.getByText(/Maria Santos/)).toBeInTheDocument();
     await fill();
     await userEvent.click(screen.getByRole('button', { name: 'Enroll' }));
-    await waitFor(() => expect(publicApi.selfEnroll).toHaveBeenCalledWith(TOKEN, expect.objectContaining({ studentNumber: '2025-00777', lastName: 'Rizal', firstName: 'José', yearLevel: 1, middleName: null, email: null })));
+    await waitFor(() => expect(publicApi.selfEnroll).toHaveBeenCalledWith(TOKEN, expect.objectContaining({ studentNumber: '2025-00777', lastName: 'Rizal', firstName: 'José', yearLevel: 1, middleName: null, email: 'jose.rizal@evsu.edu.ph' })));
     expect(await screen.findByRole('heading', { name: "You're enrolled" })).toBeInTheDocument();
+  });
+
+  it('does not enroll without an email', async () => {
+    vi.mocked(publicApi.getJoinInfo).mockResolvedValue(info);
+    renderApp(`/join/${TOKEN}`);
+    await fill();
+    await userEvent.clear(screen.getByLabelText(/Email/));
+    await userEvent.click(screen.getByRole('button', { name: 'Enroll' }));
+    expect(await screen.findByText('Enter your email.')).toBeInTheDocument();
+    expect(publicApi.selfEnroll).not.toHaveBeenCalled();
   });
 
   it('shows "already enrolled" on the student number field', async () => {

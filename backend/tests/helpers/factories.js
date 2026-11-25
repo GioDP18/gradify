@@ -33,7 +33,7 @@ export const validStudent = (overrides = {}) => {
     firstName: 'Juan',
     middleName: 'Protacio',
     lastName: 'Dela Cruz',
-    email: null,
+    email: `student${studentCounter}@evsu.edu.ph`,
     course: 'BSIT',
     yearLevel: 1,
     section: 'A',

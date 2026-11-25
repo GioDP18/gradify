@@ -33,7 +33,7 @@ const FIELDS = {
     check: (v) => (v.length <= 60 && NAME_PATTERN.test(v)) || 'Last name may contain letters, spaces, apostrophes, dots, and dashes (max 60)',
   },
   email: {
-    required: false,
+    required: true,
     normalize: (v) => squish(v).toLowerCase(),
     check: (v) => (v.length <= 254 && EMAIL_PATTERN.test(v)) || 'Email address is invalid',
   },

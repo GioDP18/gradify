@@ -128,13 +128,19 @@ describe('add student form', () => {
     await userEvent.type(q.getByLabelText(/Section/), 'A');
     expect(q.getByLabelText(/Also enroll in my working class/)).toBeChecked();
 
+    // Email is required: nothing is sent without it.
+    await userEvent.click(q.getByRole('button', { name: 'Add student' }));
+    expect(await q.findByText('Email is required.')).toBeInTheDocument();
+    expect(studentsApi.createStudent).not.toHaveBeenCalled();
+    await userEvent.type(q.getByLabelText(/Email/), 'ana.reyes@evsu.edu.ph');
+
     await userEvent.click(q.getByRole('button', { name: 'Add student' }));
     expect(await q.findByRole('alert')).toHaveTextContent('already exists in your roster');
 
     await userEvent.click(q.getByRole('button', { name: 'Add student' }));
     await waitFor(() => expect(studentsApi.createStudent).toHaveBeenCalledTimes(2));
     expect(vi.mocked(studentsApi.createStudent).mock.calls[1]).toEqual([
-      expect.objectContaining({ studentNumber: '2026-00009', lastName: 'Reyes', yearLevel: 1 }),
+      expect.objectContaining({ studentNumber: '2026-00009', lastName: 'Reyes', email: 'ana.reyes@evsu.edu.ph', yearLevel: 1 }),
       { classId: 'c1' },
     ]);
     expect(await screen.findByText('Reyes, Ana added and enrolled in IT 101 · BSIT-1A.')).toBeInTheDocument();
