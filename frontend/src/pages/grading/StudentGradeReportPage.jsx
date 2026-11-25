@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Download, Printer } from 'lucide-react';
-import { useStudentGrade } from '../../hooks/useGrading';
+import { ArrowLeft, Calculator, Download, Printer, RefreshCw } from 'lucide-react';
+import { useStudentGrade, useRecalculateStudent } from '../../hooks/useGrading';
 import { exportStudentReport } from '../../services/gradingApi';
 import { useToast } from '../../components/common/Toast';
 import { SEMESTER_LABELS } from '../../context/ClassContext';
@@ -22,6 +22,24 @@ const STATUS_TEXT = {
   INC_LAPSED: 'INC lapsed — final grade 5.0',
 };
 
+/** Long enough to see the animation even when the server answers at once. */
+const MIN_CALCULATING_MS = 900;
+
+/** Shown in place of the figures while the engine recalculates this student. */
+function CalculatingPanel({ name }) {
+  return (
+    <section className="evsu-card evsu-calculating" role="status" aria-live="polite">
+      <span className="evsu-calculating__icon" aria-hidden="true"><Calculator size={28} /></span>
+      <p className="h6 mb-1">
+        Calculating {name}&rsquo;s grade
+        <span className="evsu-calculating__dots" aria-hidden="true"><i /><i /><i /></span>
+      </p>
+      <p className="small text-muted-evsu mb-3">Reading attendance and scores, applying the official weights.</p>
+      <span className="evsu-calculating__bar" aria-hidden="true" />
+    </section>
+  );
+}
+
 /** Individual grade report: exactly how the engine computed this student's grade. */
 export default function StudentGradeReportPage() {
   const { period, studentId } = useParams();
@@ -30,6 +48,8 @@ export default function StudentGradeReportPage() {
   const toast = useToast();
   const [exporting, setExporting] = useState(null);
   const { data, isPending, error, refetch } = useStudentGrade(period, classId, studentId);
+  const recalc = useRecalculateStudent();
+  const [calculating, setCalculating] = useState(false);
 
   const backLink = `/grading${period === 'midterm' ? '' : `?period=${period}`}`;
 
@@ -55,6 +75,19 @@ export default function StudentGradeReportPage() {
   const s = g.student;
   const periodLabel = GRADING_TABS.find((t) => t.value === period)?.label ?? period;
 
+  const handleRecalculate = async () => {
+    setCalculating(true);
+    try {
+      // The mutation resolves after the report has reloaded, so the new figures are ready when the animation ends.
+      await Promise.all([recalc.mutateAsync({ classId, studentId }), new Promise((resolve) => { setTimeout(resolve, MIN_CALCULATING_MS); })]);
+      toast.success(`Recalculated ${s.fullName}.`);
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setCalculating(false);
+    }
+  };
+
   const handleExport = async (format) => {
     setExporting(format);
     try {
@@ -78,6 +111,9 @@ export default function StudentGradeReportPage() {
           <ArrowLeft size={14} aria-hidden="true" /> Class grading sheet
         </Link>
         <div className="d-flex flex-wrap gap-2">
+          <button type="button" className="btn btn-light d-inline-flex align-items-center gap-2" onClick={handleRecalculate} disabled={calculating}>
+            <RefreshCw size={16} aria-hidden="true" className={calculating ? 'spin' : undefined} /> Recalculate
+          </button>
           <button type="button" className="btn btn-light d-inline-flex align-items-center gap-2" onClick={() => handleExport('csv')} disabled={Boolean(exporting)}>
             {exporting === 'csv' ? <Spinner size="sm" label="" /> : <Download size={16} aria-hidden="true" />} CSV
           </button>
@@ -114,6 +150,10 @@ export default function StudentGradeReportPage() {
         </div>
       </section>
 
+      {calculating ? (
+        <CalculatingPanel name={s.fullName} />
+      ) : (
+      <>
       {period === 'overall' ? (
         <>
           {['MIDTERM', 'FINALS'].map((p) => (
@@ -179,6 +219,8 @@ export default function StudentGradeReportPage() {
           {g.lastCalculatedAt ? ` on ${new Date(g.lastCalculatedAt).toLocaleString('en-PH')}` : ''}. The percentage is rounded half-up to a whole number before conversion to the 1.0–5.0 scale.
         </p>
       </section>
+      </>
+      )}
     </>
   );
 }

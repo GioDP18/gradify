@@ -297,6 +297,20 @@ describe('grading API', () => {
     expect(res.body.data).toEqual({ recalculated: 2, failed: 0 });
     expect(await AuditLog.countDocuments({ action: 'GRADE_RECALCULATE_REQUEST' })).toBe(1);
   });
+
+  it('manual recalculation of one student recalculates only that student', async () => {
+    await buildOwnerExample();
+    const res = await me.post('/api/grading/recalculate', { classId: cls.id, studentId: ana.id });
+    expect(res.body.data).toEqual({ recalculated: 1, failed: 0 });
+    const audit = await AuditLog.findOne({ action: 'GRADE_RECALCULATE_REQUEST' }).lean();
+    expect(audit.metadata.studentId).toBe(ana.id);
+    expect((await me.get(`/api/grading/overall/student/${ana.id}?classId=${cls.id}`)).body.data.grade.grade).toBe(1.7);
+
+    // A student who is not in the class, or a malformed id, is refused.
+    const outsider = (await me.post('/api/students', validStudent({ firstName: 'Zed', lastName: 'Outsider' }))).body.data;
+    expect((await me.post('/api/grading/recalculate', { classId: cls.id, studentId: outsider.id })).status).toBe(404);
+    expect((await me.post('/api/grading/recalculate', { classId: cls.id, studentId: 'nope' })).status).toBe(422);
+  });
 });
 
 describe('exports (built from persisted grades only)', () => {

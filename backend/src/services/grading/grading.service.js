@@ -363,10 +363,19 @@ export async function getStudentGradesAcrossClasses(instructorId, studentId) {
   return results;
 }
 
-export async function requestRecalculation(instructorId, classId, req) {
+/** Manual "Recalculate": the whole class, or one of its students when `studentId` is given. */
+export async function requestRecalculation(instructorId, classId, req, { studentId } = {}) {
   await getOwnedClass(instructorId, classId);
-  const result = await recalculateClass(classId, { reason: 'MANUAL', userId: instructorId });
-  await recordAudit({ userId: instructorId, action: 'GRADE_RECALCULATE_REQUEST', collection: 'computedGrades', classId, metadata: result, req });
+  let result;
+  if (studentId) {
+    const graded = (await repo.findGradedStudents(classId)).some((s) => s.studentId === String(studentId));
+    if (!graded) throw ApiError.notFound('This student has no grade in this class');
+    await repo.markStale({ classId, periods: PERIODS, studentIds: [String(studentId)] });
+    result = await recalculateStudents(classId, [String(studentId)], { reason: 'MANUAL', userId: instructorId });
+  } else {
+    result = await recalculateClass(classId, { reason: 'MANUAL', userId: instructorId });
+  }
+  await recordAudit({ userId: instructorId, action: 'GRADE_RECALCULATE_REQUEST', collection: 'computedGrades', classId, metadata: studentId ? { ...result, studentId: String(studentId) } : result, req });
   return result;
 }
 

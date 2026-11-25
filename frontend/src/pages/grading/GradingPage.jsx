@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Download, Printer, RefreshCw, School, Settings2, TriangleAlert } from 'lucide-react';
+import { Calculator, Download, Printer, RefreshCw, School, Settings2, TriangleAlert } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useClassContext, formatClassLabel, formatTerm } from '../../context/ClassContext';
 import { useClassGrades, useRecalculateClass } from '../../hooks/useGrading';
@@ -174,6 +174,17 @@ export default function GradingPage() {
     { key: 'percentage', header: isOverall ? 'Final %' : 'Computed %', sortable: true, className: 'text-end', render: (r) => pct(r, r.percentage) },
     { key: 'grade', header: 'Grade', sortable: true, className: 'text-end', render: (r) => (r.current ? <GradeChip grade={r.grade} /> : <GradeChip text="—" />) },
     { key: 'remarks', header: 'Remarks', className: 'text-nowrap', render: (r) => <GradeStatusBadge result={r} passingGrade={config?.passingGrade} /> },
+    {
+      key: 'actions',
+      header: 'Actions',
+      hideLabel: true,
+      className: 'text-end text-nowrap no-print',
+      render: (r) => (
+        <Link to={reportLink(r.studentId)} className="btn btn-sm btn-light" aria-label={`View calculation for ${r.fullName}`} title="View calculation">
+          <Calculator size={15} aria-hidden="true" />
+        </Link>
+      ),
+    },
   ];
 
   return (

@@ -14,6 +14,7 @@ vi.mock('../services/gradingApi', () => ({
   getStudentGrade: vi.fn(),
   getStudentGradesAcrossClasses: vi.fn(),
   recalculateClass: vi.fn(),
+  recalculateStudent: vi.fn(),
   getConfiguration: vi.fn(),
   getConfigurationVersions: vi.fn(),
   saveConfiguration: vi.fn(),
@@ -111,7 +112,7 @@ describe('grading sheet', () => {
 
     await userEvent.selectOptions(screen.getByLabelText('Filter by result'), '');
     await userEvent.type(screen.getByLabelText('Search students'), 'dizon');
-    expect(within(screen.getByRole('table')).getAllByRole('link').map((l) => l.textContent)).toEqual(['Dizon, Carla']);
+    expect(within(screen.getByRole('table')).getAllByRole('link').map((l) => l.textContent).filter(Boolean)).toEqual(['Dizon, Carla']); // name links (the "View calculation" links are icons)
   });
 
   it('recalculates, exports CSV and Excel through the backend', async () => {
@@ -125,6 +126,13 @@ describe('grading sheet', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Excel' }));
     expect(gradingApi.exportClassGrades).toHaveBeenCalledWith('midterm', 'c1', 'csv');
     expect(gradingApi.exportClassGrades).toHaveBeenCalledWith('midterm', 'c1', 'xlsx');
+  });
+
+  it('links each student to how their grade was computed', async () => {
+    renderApp('/grading');
+    const anaRow = (await screen.findByRole('link', { name: 'Bautista, Ana' })).closest('tr');
+    expect(within(anaRow).getByRole('link', { name: 'View calculation for Bautista, Ana' })).toHaveAttribute('href', '/grading/midterm/student/s1?classId=c1');
+    expect(within(anaRow).queryByRole('button', { name: /Recalculate/ })).not.toBeInTheDocument(); // recalculating one student lives on the report
   });
 
   it('prints the class sheet', async () => {
@@ -164,6 +172,32 @@ describe('individual grade report', () => {
     vi.mocked(gradingApi.exportStudentReport).mockResolvedValue();
     await userEvent.click(screen.getByRole('button', { name: 'Excel' }));
     expect(gradingApi.exportStudentReport).toHaveBeenCalledWith('midterm', 'c1', 's1', 'xlsx');
+  });
+
+  it('recalculates this student, showing the calculating animation until the new figures are ready', async () => {
+    const report = (percentage) => ({
+      period: 'MIDTERM',
+      class: { id: 'c1', subjectCode: 'IT 101', subjectTitle: 'Introduction to Computing', section: 'BSIT-1A', schoolYear: '2026-2027', semester: 'FIRST' },
+      configuration,
+      grade: { ...ana, percentage, student: { id: 's1', studentNumber: '2026-001', fullName: 'Bautista, Ana', course: 'BSIT', yearLevel: 1, section: 'A' } },
+    });
+    vi.mocked(gradingApi.getStudentGrade).mockResolvedValue(report(84.1));
+    let finish;
+    vi.mocked(gradingApi.recalculateStudent).mockImplementation(() => new Promise((resolve) => { finish = () => resolve({ recalculated: 1, failed: 0 }); }));
+    renderApp('/grading/midterm/student/s1?classId=c1');
+    expect(await screen.findByRole('region', { name: 'Midterm result' })).toHaveTextContent('84.10%');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Recalculate' }));
+    expect(gradingApi.recalculateStudent).toHaveBeenCalledWith('c1', 's1');
+    expect(screen.getByRole('status')).toHaveTextContent('Calculating Bautista, Ana’s grade');
+    expect(screen.queryByRole('region', { name: 'Midterm result' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Recalculate' })).toBeDisabled();
+
+    vi.mocked(gradingApi.getStudentGrade).mockResolvedValue(report(90));
+    finish();
+    expect(await screen.findByRole('region', { name: 'Midterm result' }, { timeout: 3000 })).toHaveTextContent('90.00%');
+    expect(screen.getByText('Recalculated Bautista, Ana.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Recalculate' })).toBeEnabled();
   });
 
   it('lists lacking requirements and the INC deadline', async () => {

@@ -10,9 +10,11 @@ const router = Router();
 const classIdQuery = query('classId').isMongoId().withMessage('classId is required');
 const periodParam = param('period').isIn(['midterm', 'finals', 'overall', 'MIDTERM', 'FINALS', 'OVERALL']).withMessage('period must be midterm, finals, or overall');
 
-// Manual recalculation of a class (the backend decides the scope).
-router.post('/recalculate', validate([body('classId').isMongoId().withMessage('classId is required')]), async (req, res) =>
-  sendSuccess(res, await grading.requestRecalculation(req.user.id, req.body.classId, req)),
+// Manual recalculation of a class, or of one of its students when studentId is given.
+router.post(
+  '/recalculate',
+  validate([body('classId').isMongoId().withMessage('classId is required'), body('studentId').optional().isMongoId().withMessage('studentId is not valid')]),
+  async (req, res) => sendSuccess(res, await grading.requestRecalculation(req.user.id, req.body.classId, req, { studentId: req.body.studentId })),
 );
 
 // A student's grades across all of the instructor's classes.
