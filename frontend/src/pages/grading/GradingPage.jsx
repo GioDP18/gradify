@@ -26,6 +26,7 @@ export const GRADING_TABS = [
 const STATUS_FILTERS = [
   { value: '', label: 'All students' },
   { value: 'COMPLETE', label: 'With grade' },
+  { value: 'FAILED', label: 'Failed' },
   { value: 'INCOMPLETE', label: 'INC' },
   { value: 'DROPPED', label: 'DRP' },
   { value: 'NOT_COMPUTABLE', label: 'Not computable' },
@@ -65,7 +66,10 @@ export default function GradingPage() {
     const term = fold(search.trim());
     const filtered = (data?.rows ?? []).filter((r) => {
       if (statusFilter === 'PENDING' && r.current) return false;
-      if (statusFilter && statusFilter !== 'PENDING' && (!r.current || r.completionStatus !== statusFilter)) return false;
+      // Failed = a complete grade worse than 3.0 (the same rule the dashboard counts by).
+      if (statusFilter === 'FAILED') {
+        if (!r.current || r.completionStatus !== 'COMPLETE' || !(r.grade > 3.0)) return false;
+      } else if (statusFilter && statusFilter !== 'PENDING' && (!r.current || r.completionStatus !== statusFilter)) return false;
       return !term || fold(`${r.studentNumber} ${r.fullName}`).includes(term);
     });
     const dir = sort.order === 'desc' ? -1 : 1;

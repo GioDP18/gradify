@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
-  Users, UserCheck, UserX, Clock, CircleCheck, CircleAlert, CalendarPlus, PenLine, UserPlus, GraduationCap, School, Search, Activity, ChevronRight,
+  Users, UserCheck, UserX, Clock, CircleCheck, CircleAlert, CircleX, CalendarPlus, PenLine, UserPlus, GraduationCap, School, Search, Activity, ChevronRight,
 } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useAuth } from '../../context/AuthContext';
@@ -146,7 +146,9 @@ function ClassesPanel({ overview, onFocus }) {
               <th scope="col" className="text-end">Students</th>
               <th scope="col" className="text-end">Average</th>
               <th scope="col" className="text-end">Passing</th>
+              <th scope="col" className="text-end">Failed</th>
               <th scope="col" className="text-end">INC</th>
+              <th scope="col" className="text-end">DRP</th>
               <th scope="col" className="text-end">Attendance</th>
               <th scope="col"><span className="visually-hidden">Actions</span></th>
             </tr>
@@ -161,7 +163,9 @@ function ClassesPanel({ overview, onFocus }) {
                 <td className="text-end" data-label="Students">{c.students}</td>
                 <td className="text-end" data-label="Average">{formatPercent(c.average)}</td>
                 <td className="text-end" data-label="Passing">{c.complete ? `${c.passed} of ${c.complete}` : '—'}</td>
+                <td className="text-end" data-label="Failed">{c.complete - c.passed ? <span className="evsu-status evsu-status--error" title="Grade below 3.0">{c.complete - c.passed}</span> : '0'}</td>
                 <td className="text-end" data-label="INC">{c.incomplete ? <span className="evsu-status evsu-status--error">{c.incomplete}</span> : '0'}</td>
+                <td className="text-end" data-label="DRP">{c.dropped ? <span className="evsu-status evsu-status--warn" title="Dropped">{c.dropped}</span> : '0'}</td>
                 <td className="text-end" data-label="Attendance">{formatPercent(c.attendanceRate)}</td>
                 <td className="text-end" data-label="">
                   <button type="button" className="btn btn-sm btn-light" onClick={() => onFocus(c.id)} aria-label={`Show only ${formatClassLabel(c)}`}>
@@ -402,14 +406,20 @@ export default function DashboardPage() {
       {overview.error ? (
         <div className="evsu-card mb-3"><ErrorState title="Could not load the dashboard" error={overview.error} onRetry={overview.refetch} /></div>
       ) : (
-        <div className="evsu-dash-grid mb-4">
+        <>
+        {/* Two rows, each its own full-width grid: students and grades, then attendance. */}
+        <div className="evsu-dash-grid mb-3">
           <StatCard label="Total students" icon={Users} value={o?.totalStudents ?? '—'} hint={o?.droppedStudents ? `${o.droppedStudents} dropped` : 'currently enrolled'} to={allClasses ? '/students' : '/students?scope=class'} loading={!o} />
           <StatCard label="Complete scores" icon={CircleCheck} tone="ok" value={o?.studentsComplete ?? '—'} hint={`${o?.passed ?? 0} passing`} to={linkTo(`/grading?period=${gp}&status=COMPLETE`)} loading={!o} />
+          <StatCard label="Failed" icon={CircleX} tone="error" value={o ? o.studentsComplete - o.passed : '—'} hint="grade below 3.0" to={linkTo(`/grading?period=${gp}&status=FAILED`)} loading={!o} />
           <StatCard label="Incomplete scores" icon={CircleAlert} tone="error" value={o?.studentsIncomplete ?? '—'} hint={o?.studentsNotComputable ? `${o.studentsNotComputable} not computable` : 'INC'} to={linkTo(`/grading?period=${gp}&status=INCOMPLETE`)} loading={!o} />
+        </div>
+        <div className="evsu-dash-grid mb-4">
           <StatCard label="Total present" icon={UserCheck} tone="ok" value={o?.attendance.present ?? '—'} hint={`${o?.attendance.sessions ?? 0} sessions`} to={linkTo(`/attendance${periodQuery}`)} loading={!o} />
           <StatCard label="Total absent" icon={UserX} tone="error" value={o?.attendance.absent ?? '—'} hint="attendance records" to={linkTo(`/attendance${periodQuery}`)} loading={!o} />
           <StatCard label="Total excused" icon={Clock} tone="warn" value={o?.attendance.excused ?? '—'} hint={`rate ${formatPercent(o?.attendance.attendanceRate)}`} to={linkTo(`/attendance${periodQuery}`)} loading={!o} />
         </div>
+        </>
       )}
 
       {o?.studentsPending > 0 && (

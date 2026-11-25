@@ -152,6 +152,11 @@ describe('all classes (no classId)', () => {
     expect(d.classes.map((c) => [c.subjectCode, c.students, c.passed])).toEqual([['IT 101', 3, 1], ['IT 102', 2, 1]]);
     expect(d.classes[1].average).toBeCloseTo(86, 9);
 
+    expect(d.classes.map((c) => c.dropped)).toEqual([0, 0]);
+    await me.put(`/api/classes/${cls.id}/enrollments/${students[2].id}`, { status: 'DROPPED' });
+    const afterDrop = (await me.get('/api/dashboard/overview?period=MIDTERM')).body.data;
+    expect(afterDrop.classes.map((c) => [c.students, c.dropped])).toEqual([[2, 1], [2, 0]]);
+
     const one = (await me.get(`/api/dashboard/overview?classId=${cls2.id}&period=MIDTERM`)).body.data;
     expect(one).toMatchObject({ scope: 'CLASS', totalStudents: 2, studentsComplete: 2 });
   });
