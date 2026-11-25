@@ -22,6 +22,7 @@ import StudentFormModal, { STUDENT_STATUS_OPTIONS } from '../../components/stude
 import ImportStudentsModal from '../../components/students/ImportStudentsModal';
 import DropEnrollmentDialog from '../../components/students/DropEnrollmentDialog';
 import QrEnrollmentDialog from '../../components/classes/QrEnrollmentDialog';
+import Segmented from '../../components/common/Segmented';
 
 const PAGE_SIZE = 20;
 
@@ -254,13 +255,13 @@ export default function StudentsPage() {
     <>
       <div className="evsu-page-header">
         <div className="d-flex flex-wrap align-items-center gap-2">
-          <div className="evsu-segmented" role="group" aria-label="Which students to show">
+          <Segmented label="Which students to show">
             <button type="button" aria-pressed={!inClassScope} onClick={() => update({ scope: '', enrollment: '' })}>All my students</button>
             <button type="button" aria-pressed={inClassScope} onClick={() => update({ scope: 'class', archived: false })} disabled={!activeClass}
               title={activeClass ? undefined : 'Create or select a class first'}>
               {activeClass ? `In ${formatClassLabel(activeClass)}` : 'In working class'}
             </button>
-          </div>
+          </Segmented>
           <RefreshButton refresh={refresh} label="Refresh students" />
         </div>
         <div className="d-flex flex-wrap gap-2">

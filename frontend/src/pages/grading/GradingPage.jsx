@@ -16,6 +16,7 @@ import GradeChip from '../../components/grading/GradeChip';
 import { CHART, bucketFill } from '../../config/chartTheme';
 import PrintHeader from '../../components/grading/PrintHeader';
 import { formatPercentFixed } from '../../utils/format';
+import Segmented from '../../components/common/Segmented';
 
 export const GRADING_TABS = [
   { value: 'midterm', label: 'Midterm' },
@@ -195,13 +196,13 @@ export default function GradingPage() {
       />
 
       <div className="evsu-page-header no-print">
-        <div className="evsu-segmented" role="group" aria-label="Grading period">
+        <Segmented label="Grading period">
           {GRADING_TABS.map((tab) => (
             <button key={tab.value} type="button" aria-pressed={period === tab.value} onClick={() => setParams(tab.value === 'midterm' ? {} : { period: tab.value }, { replace: true })}>
               {tab.label}
             </button>
           ))}
-        </div>
+        </Segmented>
         <div className="d-flex flex-wrap gap-2">
           <button type="button" className="btn btn-light d-inline-flex align-items-center gap-2" onClick={handleRecalculate} disabled={recalc.isPending || !activeClass}>
             {recalc.isPending ? <Spinner size="sm" label="" /> : <RefreshCw size={16} aria-hidden="true" />} Recalculate

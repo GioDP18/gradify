@@ -10,6 +10,7 @@ import QrEnrollmentDialog from '../../components/classes/QrEnrollmentDialog';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import StatusBadge from '../../components/common/StatusBadge';
 import { EmptyState, ErrorState, SkeletonCards } from '../../components/common/States';
+import Segmented from '../../components/common/Segmented';
 
 const FILTERS = [
   { value: 'ACTIVE', label: 'Active' },
@@ -81,13 +82,13 @@ export default function ClassesPage() {
       </div>
 
       <div className="evsu-toolbar">
-        <div className="evsu-segmented" role="group" aria-label="Filter classes by status">
+        <Segmented label="Filter classes by status">
           {FILTERS.map((option) => (
             <button key={option.value} type="button" aria-pressed={filter === option.value} onClick={() => setFilter(option.value)}>
               {option.label} ({classes.filter((c) => c.status === option.value).length})
             </button>
           ))}
-        </div>
+        </Segmented>
         <RefreshButton refresh={refresh} label="Refresh classes" />
       </div>
 

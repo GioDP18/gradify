@@ -14,6 +14,7 @@ import { EmptyState, ErrorState } from '../../components/common/States';
 import SessionFormModal from '../../components/attendance/SessionFormModal';
 import { formatDateOnly, formatPercent } from '../../utils/format';
 import './attendance.css';
+import Segmented from '../../components/common/Segmented';
 
 const PAGE_SIZE = 25;
 
@@ -164,10 +165,10 @@ export default function AttendancePage() {
       <div className="evsu-page-header">
         <div className="d-flex flex-wrap align-items-center gap-2">
           <GradingPeriodSelector value={period} onChange={(value) => setParam({ period: value === 'MIDTERM' ? '' : value })} />
-          <div className="evsu-segmented" role="group" aria-label="View">
+          <Segmented label="View">
             <button type="button" aria-pressed={view === 'sessions'} onClick={() => setParam({ view: '' })}>Sessions</button>
             <button type="button" aria-pressed={view === 'summary'} onClick={() => setParam({ view: 'summary' })}>Student summary</button>
-          </div>
+          </Segmented>
           <RefreshButton refresh={refresh} label="Refresh attendance" />
         </div>
         <button type="button" className="btn btn-primary d-inline-flex align-items-center gap-2" onClick={() => setFormTarget({})} disabled={!activeClass}>

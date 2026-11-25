@@ -382,6 +382,33 @@ a {
   opacity: 0.55;
 }
 
+/* Sliding highlight (see Segmented.jsx): one pill placed under the active option. */
+.evsu-segmented.has-slider {
+  position: relative;
+  isolation: isolate;
+}
+.evsu-segmented.has-slider::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  left: 0;
+  width: var(--seg-w);
+  height: var(--seg-h);
+  border-radius: 9px;
+  background: var(--seg-pill, var(--g-surface));
+  box-shadow: var(--seg-pill-shadow, 0 1px 2px rgba(60, 30, 22, 0.08), 0 2px 8px -2px rgba(60, 30, 22, 0.1));
+  transform: translate(var(--seg-x), var(--seg-y));
+}
+.evsu-segmented.is-sliding::before {
+  transition: transform 260ms var(--g-ease), width 260ms var(--g-ease), height 260ms var(--g-ease);
+}
+.evsu-segmented.has-slider button[aria-pressed='true'],
+.evsu-segmented.has-slider .evsu-segmented__link[aria-current='page'] {
+  background: transparent;
+  box-shadow: none;
+}
+
 /* ───────────────────────── Toasts ───────────────────────── */
 .evsu-toasts {
   position: fixed;
