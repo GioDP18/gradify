@@ -8,6 +8,7 @@
  */
 import { env } from '../src/config/env.js';
 import { ensureDatabaseConnection } from '../src/config/db.js';
+import { logger } from '../src/config/logger.js';
 import { createApp } from '../src/app.js';
 import { ApiError } from '../src/utils/ApiError.js';
 import { seedOnStartup } from '../src/services/seed.service.js';
@@ -23,7 +24,9 @@ const connectionOptions = {
 async function requireDatabase(req, res, next) {
   try {
     await ensureDatabaseConnection(connectionOptions);
-  } catch {
+  } catch (error) {
+    // The user gets a short message; the reason (network access, credentials, DNS) goes to the log.
+    logger.error(`[${req.id}] Could not connect to MongoDB:`, error?.name, String(error?.message ?? error).replace(/\/\/[^@/]*@/, '//<credentials>@'));
     return next(ApiError.unavailable('The database is temporarily unavailable. Please try again shortly.'));
   }
   // A new deployment starts with a cold instance: seed an empty database before its first request
