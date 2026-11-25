@@ -115,10 +115,10 @@ export default function LoginPage() {
         <p className="lg__kicker">Eastern Visayas State University • Since 1907</p>
         <span className="lg__rule" aria-hidden="true" />
         <p className="lg__headline">
-          Your academic journey,<br />
-          <em>made clearer.</em>
+          Your class records,<br />
+          <em>made simpler.</em>
         </p>
-        <p className="lg__intro">Access your grades, track your progress,<br />and stay on top of your academic goals.</p>
+        <p className="lg__intro">Record attendance and scores, compute grades,<br />and keep every class in one place.</p>
         <p className="lg__values">Excellence • Virtue • Service • Unity</p>
       </section>
 
@@ -127,7 +127,7 @@ export default function LoginPage() {
         <div className="lg__card">
           <img src={logo} alt="Gradify, EVSU Grading System" className="lg__logo" width="560" height="560" />
           <h1 className="lg__title">Welcome back</h1>
-          <p className="lg__subtitle">Sign in to continue to your Gradify account</p>
+          <p className="lg__subtitle">Sign in to your instructor account</p>
 
           {sessionExpired && !formError && (
             <div className="alert alert-warning lg__alert" role="status">Your session has expired. Please sign in again.</div>
@@ -221,7 +221,7 @@ export default function LoginPage() {
         <footer className="lg__footer">
           <span>© {new Date().getFullYear()} GRADIFY • EVSU Grading System</span>
           <span className="lg__footer-sep" aria-hidden="true" />
-          <span className="lg__secure"><ShieldCheck fill="currentColor" stroke="#fff" aria-hidden="true" /> Secure student access</span>
+          <span className="lg__secure"><ShieldCheck fill="currentColor" stroke="#fff" aria-hidden="true" /> Secure instructor access</span>
         </footer>
       </main>
     </div>
