@@ -4,6 +4,7 @@ import { connectDatabase, disconnectDatabase, supportsTransactions } from './con
 import { createApp } from './app.js';
 import { sweep } from './services/grading/grading.service.js';
 import { applyAuditRetention } from './services/auditRetention.service.js';
+import { seedOnStartup } from './services/seed.service.js';
 
 const SWEEP_INTERVAL_MS = 6 * 60 * 60 * 1000;
 
@@ -23,6 +24,8 @@ async function start() {
     logger.error('Could not connect to MongoDB:', error.message);
     process.exit(1);
   }
+
+  await seedOnStartup(); // only when SEED_DATABASE=true and the database is empty
 
   const server = createApp().listen(env.port, () => {
     logger.info(`API listening on port ${env.port} (${env.nodeEnv})`);

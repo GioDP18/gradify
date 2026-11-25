@@ -10,6 +10,7 @@ import { env } from '../src/config/env.js';
 import { ensureDatabaseConnection } from '../src/config/db.js';
 import { createApp } from '../src/app.js';
 import { ApiError } from '../src/utils/ApiError.js';
+import { seedOnStartup } from '../src/services/seed.service.js';
 
 const connectionOptions = {
   uri: env.mongodb.uri,
@@ -22,10 +23,13 @@ const connectionOptions = {
 async function requireDatabase(req, res, next) {
   try {
     await ensureDatabaseConnection(connectionOptions);
-    next();
   } catch {
-    next(ApiError.unavailable('The database is temporarily unavailable. Please try again shortly.'));
+    return next(ApiError.unavailable('The database is temporarily unavailable. Please try again shortly.'));
   }
+  // A new deployment starts with a cold instance: seed an empty database before its first request
+  // is served (only when SEED_DATABASE=true; once per instance; never fails the request).
+  await seedOnStartup();
+  return next();
 }
 
 export default createApp({ beforeRoutes: requireDatabase });
