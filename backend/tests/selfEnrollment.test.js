@@ -14,7 +14,7 @@ const app = createApp();
 
 let me;
 let cls;
-const form = (overrides = {}) => ({ studentNumber: '2025-00777', lastName: 'Rizal', firstName: 'José', middleName: 'Protasio', course: 'BSIT', yearLevel: 1, section: 'A', ...overrides });
+const form = (overrides = {}) => ({ studentNumber: '2025-00777', lastName: 'Rizal', firstName: 'José', middleName: 'Protasio', email: 'jose.rizal@evsu.edu.ph', course: 'BSIT', yearLevel: 1, section: 'A', ...overrides });
 const join = (token) => request(app).get(`/api/public/enroll/${token}`);
 const enroll = (token, body) => request(app).post(`/api/public/enroll/${token}`).send(body);
 async function open() {

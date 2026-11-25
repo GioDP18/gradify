@@ -35,6 +35,15 @@ describe('validateStudentInput (shared by API and CSV import)', () => {
     expect(errors).toEqual([]);
   });
 
+  it('requires an email', () => {
+    for (const email of [undefined, null, '', '   ']) {
+      expect(validateStudentInput({ ...validStudent(), email }).errors).toEqual([{ field: 'email', message: 'Email is required' }]);
+    }
+    // An update may leave the email alone, but may not clear it.
+    expect(validateStudentInput({ section: 'B' }, { partial: true }).errors).toEqual([]);
+    expect(validateStudentInput({ email: '' }, { partial: true }).errors).toEqual([{ field: 'email', message: 'Email is required' }]);
+  });
+
   it('reports every invalid field', () => {
     const { errors } = validateStudentInput({ studentNumber: '#1', firstName: 'J0hn', lastName: '', course: '', yearLevel: '7', section: '', email: 'nope', enrollmentStatus: 'GRADUATED' });
     expect(errors.map((e) => e.field).sort()).toEqual(['course', 'email', 'enrollmentStatus', 'firstName', 'lastName', 'section', 'studentNumber', 'yearLevel'].sort());

@@ -26,7 +26,7 @@ const HEADER_ALIASES = {
   section: ['section'],
   enrollmentStatus: ['enrollmentstatus', 'status'],
 };
-const REQUIRED_COLUMNS = ['studentNumber', 'firstName', 'lastName', 'course', 'yearLevel', 'section'];
+const REQUIRED_COLUMNS = ['studentNumber', 'firstName', 'lastName', 'email', 'course', 'yearLevel', 'section'];
 
 const canonical = (header) => String(header).toLowerCase().replace(/[^a-z0-9]/g, '');
 

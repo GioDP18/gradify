@@ -5,7 +5,7 @@ import Spinner from '../common/Spinner';
 import { formatClassLabel } from '../../context/ClassContext';
 import { saveBlob } from '../../utils/download';
 
-const TEMPLATE = 'Student Number,Last Name,First Name,Middle Name,Email,Course,Year Level,Section\n2026-00001,Dela Cruz,Juan,Protacio,,BSIT,1,A\n';
+const TEMPLATE = 'Student Number,Last Name,First Name,Middle Name,Email,Course,Year Level,Section\n2026-00001,Dela Cruz,Juan,Protacio,juan.delacruz@example.com,BSIT,1,A\n';
 
 /**
  * Two-step CSV import: the file is checked first (dry run, nothing saved), the instructor
@@ -81,7 +81,7 @@ export default function ImportStudentsModal({ open, activeClass, onClose, onImpo
       }
     >
       <p className="small text-muted-evsu">
-        Required columns: Student Number, First Name, Last Name, Course, Year Level, Section. Optional: Middle Name, Email, Status.
+        Required columns: Student Number, First Name, Last Name, Email, Course, Year Level, Section. Optional: Middle Name, Status.
         <button type="button" className="btn btn-link btn-sm p-0 ms-2 align-baseline d-inline-flex align-items-center gap-1" onClick={() => saveBlob(new Blob([TEMPLATE], { type: 'text/csv' }), 'evsu-student-import-template.csv')}>
           <Download size={14} aria-hidden="true" /> Download template
         </button>

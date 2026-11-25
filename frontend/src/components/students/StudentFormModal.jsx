@@ -102,8 +102,8 @@ export default function StudentFormModal({ open, student, activeClass, onClose, 
             />
           </div>
           <div className="col-md-6">
-            <TextField label="Email" type="email" placeholder="Optional" error={errors.email?.message}
-              {...register('email', { validate: (v) => !v.trim() || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()) || 'Enter a valid email address.' })} />
+            <TextField label="Email" type="email" required placeholder="name@example.com" error={errors.email?.message}
+              {...register('email', { validate: (v) => (v.trim() ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()) || 'Enter a valid email address.' : 'Email is required.') })} />
           </div>
           <div className="col-md-4">
             <TextField label="Last name" required error={errors.lastName?.message} {...register('lastName', nameRules('Last name', true))} />

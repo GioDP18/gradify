@@ -21,7 +21,7 @@ const HEADER = 'Student Number,First Name,Middle Name,Last Name,Email,Course,Yea
 
 describe('CSV student import', () => {
   it('imports valid rows (BOM, flexible headers, accented names)', async () => {
-    const csv = `﻿student_no,FIRSTNAME,mi,Surname,email,program,year,section\n2026-1,José,R,Rizal,,bsit,1,a\n2026-2,Niña,,Peña,nina@evsu.edu.ph,BSIT,1,A\n`;
+    const csv = `﻿student_no,FIRSTNAME,mi,Surname,email,program,year,section\n2026-1,José,R,Rizal,student@evsu.edu.ph,bsit,1,a\n2026-2,Niña,,Peña,nina@evsu.edu.ph,BSIT,1,A\n`;
     const res = await upload(csv);
     expect(res.status).toBe(201);
     expect(res.body.data).toMatchObject({ totalRows: 2, created: 2, skipped: 0 });
@@ -33,10 +33,10 @@ describe('CSV student import', () => {
     await me.post('/api/students', validStudent({ studentNumber: 'EXISTS-1' }));
     const csv = [
       HEADER,
-      'OK-1,Ana,,Santos,,BSIT,1,A',
-      'OK-1,Ben,,Reyes,,BSIT,1,A', // duplicate in file
+      'OK-1,Ana,,Santos,student@evsu.edu.ph,BSIT,1,A',
+      'OK-1,Ben,,Reyes,student@evsu.edu.ph,BSIT,1,A', // duplicate in file
       ',Carl,,Lim,bad-email,BSIT,9,A', // several errors
-      'EXISTS-1,Dina,,Uy,,BSIT,1,A', // already in roster
+      'EXISTS-1,Dina,,Uy,student@evsu.edu.ph,BSIT,1,A', // already in roster
     ].join('\n');
     const res = await upload(csv, '?dryRun=true');
     expect(res.status).toBe(200);
@@ -48,8 +48,15 @@ describe('CSV student import', () => {
     expect(await Student.countDocuments()).toBe(1);
   });
 
+  it('rejects rows without an email', async () => {
+    const res = await upload([HEADER, 'E-1,Ana,,Santos,,BSIT,1,A'].join('\n'), '?dryRun=true');
+    expect(res.status).toBe(200);
+    expect(res.body.data).toMatchObject({ toCreate: 0, invalidRows: 1 });
+    expect(res.body.data.errors[0].errors).toEqual([{ field: 'email', message: 'Email is required' }]);
+  });
+
   it('is all-or-nothing unless skipInvalid is set', async () => {
-    const csv = [HEADER, 'A-1,Ana,,Santos,,BSIT,1,A', 'A-2,,,Reyes,,BSIT,1,A'].join('\n');
+    const csv = [HEADER, 'A-1,Ana,,Santos,student@evsu.edu.ph,BSIT,1,A', 'A-2,,,Reyes,student@evsu.edu.ph,BSIT,1,A'].join('\n');
     const strict = await upload(csv);
     expect(strict.status).toBe(422);
     expect(await Student.countDocuments()).toBe(0);
@@ -62,7 +69,7 @@ describe('CSV student import', () => {
   it('enrolls new and existing students into a class; flags name mismatches', async () => {
     const cls = (await me.post('/api/classes', validClass())).body.data;
     await me.post('/api/students', validStudent({ studentNumber: 'OLD-1', lastName: 'Garcia' }));
-    const csv = [HEADER, 'NEW-1,Ana,,Santos,,BSIT,1,A', 'OLD-1,Luis,,Garcya,,BSIT,1,A'].join('\n');
+    const csv = [HEADER, 'NEW-1,Ana,,Santos,student@evsu.edu.ph,BSIT,1,A', 'OLD-1,Luis,,Garcya,student@evsu.edu.ph,BSIT,1,A'].join('\n');
     const res = await upload(csv, `?classId=${cls.id}`);
     expect(res.status).toBe(201);
     expect(res.body.data).toMatchObject({ created: 1, enrolledExisting: 1 });
@@ -75,7 +82,7 @@ describe('CSV student import', () => {
   it('rejects files with missing columns, no rows, or the wrong type', async () => {
     const missing = await upload('Student Number,First Name\n1,Ana\n');
     expect(missing.status).toBe(422);
-    expect(missing.body.error.details.map((d) => d.field)).toEqual(['lastName', 'course', 'yearLevel', 'section']);
+    expect(missing.body.error.details.map((d) => d.field)).toEqual(['lastName', 'email', 'course', 'yearLevel', 'section']);
 
     expect((await upload(`${HEADER}\n`)).status).toBe(400);
     expect((await upload('not,a,csv', '', 'students.xlsx')).status).toBe(400);
@@ -90,7 +97,7 @@ describe('CSV student import', () => {
   it('cannot import into another instructor’s class', async () => {
     const other = await instructorSession(app);
     const theirClass = (await other.post('/api/classes', validClass())).body.data;
-    const res = await upload(`${HEADER}\nX-1,Ana,,Santos,,BSIT,1,A`, `?classId=${theirClass.id}`);
+    const res = await upload(`${HEADER}\nX-1,Ana,,Santos,student@evsu.edu.ph,BSIT,1,A`, `?classId=${theirClass.id}`);
     expect(res.status).toBe(404);
     expect(await Student.countDocuments()).toBe(0);
   });
