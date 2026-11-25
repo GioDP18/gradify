@@ -2,6 +2,9 @@ import { parse } from 'csv-parse/sync';
 import { Student } from '../models/Student.js';
 import { ApiError } from '../utils/ApiError.js';
 import { logger } from '../config/logger.js';
+
+/** Column names as an instructor would write them in the file's header row. */
+const COLUMN_NAMES = { studentNumber: 'Student number', firstName: 'First name', middleName: 'Middle name', lastName: 'Last name', email: 'Email', course: 'Course', yearLevel: 'Year level', section: 'Section' };
 import { runInTransaction } from '../utils/transaction.js';
 import { validateStudentInput, STUDENT_FIELDS } from '../validators/student.rules.js';
 import { recordAudit } from './audit.service.js';
@@ -52,7 +55,7 @@ function parseCsv(buffer) {
   const missing = REQUIRED_COLUMNS.filter((field) => mapping[field] === undefined);
   if (missing.length) {
     throw ApiError.validation(
-      missing.map((field) => ({ field, message: `Missing required column "${field}"` })),
+      missing.map((field) => ({ field, message: `Missing column: ${COLUMN_NAMES[field] ?? field}` })),
       'The CSV file is missing required columns',
     );
   }

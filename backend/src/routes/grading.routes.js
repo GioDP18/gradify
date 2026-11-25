@@ -7,13 +7,13 @@ import { exportClassSheet, exportStudentReport } from '../services/gradeExport.s
 
 const router = Router();
 
-const classIdQuery = query('classId').isMongoId().withMessage('classId is required');
-const periodParam = param('period').isIn(['midterm', 'finals', 'overall', 'MIDTERM', 'FINALS', 'OVERALL']).withMessage('period must be midterm, finals, or overall');
+const classIdQuery = query('classId').isMongoId().withMessage('Choose a class.');
+const periodParam = param('period').isIn(['midterm', 'finals', 'overall', 'MIDTERM', 'FINALS', 'OVERALL']).withMessage('Choose Midterm, Finals, or Final Grade.');
 
 // Manual recalculation of a class, or of one of its students when studentId is given.
 router.post(
   '/recalculate',
-  validate([body('classId').isMongoId().withMessage('classId is required'), body('studentId').optional().isMongoId().withMessage('studentId is not valid')]),
+  validate([body('classId').isMongoId().withMessage('Choose a class.'), body('studentId').optional().isMongoId().withMessage('Choose a student.')]),
   async (req, res) => sendSuccess(res, await grading.requestRecalculation(req.user.id, req.body.classId, req, { studentId: req.body.studentId })),
 );
 
@@ -23,7 +23,7 @@ router.get('/student/:studentId', validate([param('studentId').isMongoId()]), as
 );
 
 // Exports (CSV / Excel) — built from the engine's persisted results only.
-const formatQuery = query('format').optional().isIn(['csv', 'xlsx']).withMessage('format must be csv or xlsx');
+const formatQuery = query('format').optional().isIn(['csv', 'xlsx']).withMessage('Choose CSV or Excel.');
 function sendFile(res, { filename, contentType, body }) {
   res.set({ 'Content-Type': contentType, 'Content-Disposition': `attachment; filename="${filename}"`, 'Cache-Control': 'no-store' });
   return res.send(Buffer.isBuffer(body) ? body : Buffer.from(body));

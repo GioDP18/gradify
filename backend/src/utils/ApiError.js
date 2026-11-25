@@ -14,7 +14,7 @@ export class ApiError extends Error {
     this.details = details;
   }
 
-  static badRequest(message = 'That request is not valid.', details) {
+  static badRequest(message = 'That could not be done. Reload the page and try again.', details) {
     return new ApiError(400, 'BAD_REQUEST', message, details);
   }
 
@@ -38,11 +38,11 @@ export class ApiError extends Error {
     return new ApiError(422, 'VALIDATION_ERROR', message, details);
   }
 
-  static tooManyRequests(message = 'Too many requests. Please wait and try again.') {
+  static tooManyRequests(message = 'Too many attempts. Please wait and try again.') {
     return new ApiError(429, 'TOO_MANY_REQUESTS', message);
   }
 
-  static unavailable(message = 'The service is unavailable. Try again shortly.') {
+  static unavailable(message = 'Gradify is unavailable right now. Try again shortly.') {
     return new ApiError(503, 'SERVICE_UNAVAILABLE', message);
   }
 }

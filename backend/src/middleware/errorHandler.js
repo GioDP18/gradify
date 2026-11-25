@@ -29,7 +29,7 @@ function normalize(error) {
     return ApiError.conflict('That already exists.', { fields });
   }
   if (error?.type === 'entity.parse.failed') {
-    return ApiError.badRequest('That request could not be read. Please try again.');
+    return ApiError.badRequest('That could not be done. Reload the page and try again.');
   }
   if (error?.type === 'entity.too.large') {
     return new ApiError(413, 'PAYLOAD_TOO_LARGE', 'That is too large to send.');

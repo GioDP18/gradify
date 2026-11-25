@@ -65,7 +65,7 @@ export async function listVersions() {
 
 export async function getVersion(version) {
   const doc = await GradingConfiguration.findOne({ version }).lean();
-  if (!doc) throw ApiError.notFound('Grading configuration version not found');
+  if (!doc) throw ApiError.notFound('That criteria version was not found.');
   return doc;
 }
 
@@ -79,7 +79,7 @@ export async function createVersion(adminId, changes, req) {
     const active = await getActiveConfiguration({ session });
     const next = { ...Object.fromEntries(RULE_FIELDS.map((f) => [f, active[f]])), ...changes };
     const problems = validateConfiguration(next);
-    if (problems.length) throw ApiError.validation(problems, 'The grading configuration is invalid');
+    if (problems.length) throw ApiError.validation(problems, 'The grading criteria are not valid.');
 
     await GradingConfiguration.updateOne({ _id: active._id }, { $set: { isActive: false } }, { session });
     const [created] = await GradingConfiguration.create(

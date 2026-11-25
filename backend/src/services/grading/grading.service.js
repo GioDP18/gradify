@@ -294,7 +294,7 @@ function publicConfigSummary(config) {
 const PERIOD_PARAM = { midterm: 'MIDTERM', finals: 'FINALS', overall: 'OVERALL' };
 export function parsePeriodParam(value) {
   const period = PERIOD_PARAM[String(value).toLowerCase()];
-  if (!period) throw ApiError.badRequest('Grading period must be midterm, finals, or overall');
+  if (!period) throw ApiError.badRequest('Choose Midterm, Finals, or Final Grade.');
   return period;
 }
 

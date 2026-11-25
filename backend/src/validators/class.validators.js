@@ -28,9 +28,9 @@ function classFields({ optional }) {
     req(body('schoolYear'))
       .isString().withMessage('School year is required').bail()
       .trim().custom(schoolYearIsConsecutive),
-    req(body('semester')).isIn(SEMESTERS).withMessage(`Semester must be one of ${SEMESTERS.join(', ')}`),
+    req(body('semester')).isIn(SEMESTERS).withMessage('Choose a semester.'),
     req(body('termEndDate'))
-      .isISO8601({ strict: true }).withMessage('Term end date must be a valid date (YYYY-MM-DD)').bail()
+      .isISO8601({ strict: true }).withMessage('Enter a valid term end date.').bail()
       .toDate(),
   ];
 }
@@ -38,5 +38,5 @@ function classFields({ optional }) {
 export const createClassRules = classFields({ optional: false });
 export const updateClassRules = classFields({ optional: true });
 export const listClassRules = [
-  query('status').optional().isIn(Object.values(CLASS_STATUSES)).withMessage('Invalid status filter'),
+  query('status').optional().isIn(Object.values(CLASS_STATUSES)).withMessage('That filter is not valid.'),
 ];

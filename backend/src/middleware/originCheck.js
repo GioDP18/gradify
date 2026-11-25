@@ -9,7 +9,7 @@ import { ApiError } from '../utils/ApiError.js';
 export function requireTrustedOrigin(req, res, next) {
   const origin = req.get('Origin');
   if (origin && !env.clientUrls.includes(origin)) {
-    return next(ApiError.forbidden('This request is not allowed.'));
+    return next(ApiError.forbidden('That is not allowed.'));
   }
   return next();
 }

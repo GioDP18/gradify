@@ -8,9 +8,9 @@ import { parseDateOnly } from '../utils/dates.js';
 const router = Router();
 
 // Optional: without a class the dashboard covers all of the instructor's active classes.
-const classId = query('classId').optional().isMongoId().withMessage('classId must be a valid id');
-const period = query('period').optional().isIn(['MIDTERM', 'FINALS']).withMessage('period must be MIDTERM or FINALS');
-const date = (name) => query(name).optional().custom((v) => parseDateOnly(v) !== null).withMessage(`${name} must be a real calendar date (YYYY-MM-DD)`);
+const classId = query('classId').optional().isMongoId().withMessage('Choose a class.');
+const period = query('period').optional().isIn(['MIDTERM', 'FINALS']).withMessage('Choose Midterm or Finals.');
+const date = (name) => query(name).optional().custom((v) => parseDateOnly(v) !== null).withMessage('Enter a valid date.');
 
 router.get('/overview', validate([classId, period, date('from'), date('to')]), async (req, res) =>
   sendSuccess(res, await dashboard.getOverview(req.user.id, req.validatedQuery)),

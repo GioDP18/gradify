@@ -20,8 +20,8 @@ router.post(
   requireTrustedOrigin,
   authorize(ROLES.ADMIN),
   validate([
-    body('periodWeights').optional().isObject().withMessage('periodWeights must be an object'),
-    body('periods').optional().isObject().withMessage('periods must be an object'),
+    body('periodWeights').optional().isObject().withMessage('The grading criteria are not valid.'),
+    body('periods').optional().isObject().withMessage('The grading criteria are not valid.'),
     body('notes').optional({ values: 'null' }).isString().trim().isLength({ max: 500 }).withMessage('Notes must be at most 500 characters'),
   ]),
   async (req, res) => {

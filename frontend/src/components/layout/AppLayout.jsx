@@ -36,7 +36,7 @@ export default function AppLayout() {
     try {
       await logout();
     } catch {
-      toast.error('Could not log out: the server did not respond. You are still signed in. Check your connection and try again.');
+      toast.error('Could not sign out. You are still signed in. Check your internet and try again.');
       return;
     }
     toast.info('You have been logged out.');

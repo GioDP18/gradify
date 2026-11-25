@@ -35,7 +35,7 @@ function toPublicSession(session, counts) {
 
 function validateSessionDate(value) {
   const date = parseDateOnly(value);
-  if (!date) throw ApiError.validation([{ field: 'sessionDate', message: 'Session date must be a valid date (YYYY-MM-DD)' }]);
+  if (!date) throw ApiError.validation([{ field: 'sessionDate', message: 'Enter a valid session date.' }]);
   if (value > todayInTimeZone(env.timezone)) {
     throw ApiError.validation([{ field: 'sessionDate', message: 'Attendance cannot be recorded for a future date' }]);
   }

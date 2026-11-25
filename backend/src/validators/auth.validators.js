@@ -13,20 +13,20 @@ export const loginRules = [
     .bail()
     .notEmpty().withMessage('Password is required')
     .custom(passwordFitsBcrypt).withMessage(PASSWORD_TOO_LONG),
-  body('remember').optional().isBoolean({ strict: true }).withMessage('remember must be true or false'),
+  body('remember').optional().isBoolean({ strict: true }).withMessage('That choice is not valid.'),
 ];
 
 export const updateProfileRules = [
-  body('name').optional().isString().withMessage('Name must be text').bail().trim()
+  body('name').optional().isString().withMessage('Enter a valid name.').bail().trim()
     .notEmpty().withMessage('Name is required')
     .isLength({ max: 120 }).withMessage('Name must be at most 120 characters'),
-  body('email').optional().isString().withMessage('Email must be text').bail().trim().toLowerCase()
+  body('email').optional().isString().withMessage('Enter a valid email address.').bail().trim().toLowerCase()
     .isEmail().withMessage('Enter a valid email address')
     .isLength({ max: 254 }).withMessage('Email is too long'),
-  body('username').optional().isString().withMessage('Username must be text').bail().trim().toLowerCase()
+  body('username').optional().isString().withMessage('Enter a valid username.').bail().trim().toLowerCase()
     .custom((v) => v === '' || /^[a-z0-9._-]{3,40}$/.test(v))
     .withMessage('Username must be 3–40 characters: letters, numbers, dots, dashes, or underscores'),
-  body('currentPassword').optional({ values: 'falsy' }).isString().withMessage('Password must be text').bail()
+  body('currentPassword').optional({ values: 'falsy' }).isString().withMessage('Enter a valid password.').bail()
     .custom(passwordFitsBcrypt).withMessage(PASSWORD_TOO_LONG),
 ];
 
@@ -40,5 +40,5 @@ export const changePasswordRules = [
 ];
 
 export const preferencesRules = [
-  body('workingClass').optional().isBoolean({ strict: true }).withMessage('workingClass must be true or false'),
+  body('workingClass').optional().isBoolean({ strict: true }).withMessage('That choice is not valid.'),
 ];

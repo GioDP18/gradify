@@ -10,13 +10,13 @@ export const PASSWORD_RULES = 'at least 12 characters, with upper- and lowercase
  */
 export const MAX_PASSWORD_BYTES = 72;
 export const passwordFitsBcrypt = (password) => Buffer.byteLength(String(password ?? ''), 'utf8') <= MAX_PASSWORD_BYTES;
-export const PASSWORD_TOO_LONG = `Password is too long: at most ${MAX_PASSWORD_BYTES} bytes (72 plain letters; fewer with accents or emoji)`;
+export const PASSWORD_TOO_LONG = 'Password is too long. Use 72 characters or fewer.';
 
 /** Returns a list of unmet password requirements (empty = acceptable). */
 export function checkPasswordStrength(password = '') {
   const problems = [];
   if (password.length < 12) problems.push('at least 12 characters');
-  if (!passwordFitsBcrypt(password)) problems.push(`at most ${MAX_PASSWORD_BYTES} bytes (72 plain letters; fewer with accents or emoji)`);
+  if (!passwordFitsBcrypt(password)) problems.push('72 characters or fewer');
   if (!/[a-z]/.test(password)) problems.push('a lowercase letter');
   if (!/[A-Z]/.test(password)) problems.push('an uppercase letter');
   if (!/\d/.test(password)) problems.push('a number');

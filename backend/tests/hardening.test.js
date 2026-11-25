@@ -88,15 +88,15 @@ describe('I-1: passwords are capped at 72 bytes', () => {
     expect(accented).toHaveLength(40);
     expect(passwordFitsBcrypt(accented)).toBe(false);
     expect(checkPasswordStrength(strong72)).toEqual([]);
-    expect(checkPasswordStrength(strong73)).toEqual(['at most 72 bytes (72 plain letters; fewer with accents or emoji)']);
-    expect(checkPasswordStrength(accented)).toEqual(['at most 72 bytes (72 plain letters; fewer with accents or emoji)']);
+    expect(checkPasswordStrength(strong73)).toEqual(['72 characters or fewer']);
+    expect(checkPasswordStrength(accented)).toEqual(['72 characters or fewer']);
   });
 
   it('login refuses an over-long password with a clear message, before checking it', async () => {
     const user = await createUser();
     const res = await request(app).post('/api/auth/login').send({ identifier: user.email, password: strong73 });
     expect(res.status).toBe(422);
-    expect(res.body.error.details).toEqual([{ field: 'password', message: 'Password is too long: at most 72 bytes (72 plain letters; fewer with accents or emoji)' }]);
+    expect(res.body.error.details).toEqual([{ field: 'password', message: 'Password is too long. Use 72 characters or fewer.' }]);
     // A 72-byte password is still checked normally.
     expect((await request(app).post('/api/auth/login').send({ identifier: user.email, password: strong72 })).status).toBe(401);
   });
@@ -109,10 +109,10 @@ describe('I-1: passwords are capped at 72 bytes', () => {
     for (const tooLong of [strong73, accented]) {
       const res = await change(accessToken, { currentPassword: DEFAULT_PASSWORD, newPassword: tooLong });
       expect(res.status).toBe(422);
-      expect(res.body.error.details[0]).toMatchObject({ field: 'newPassword', message: expect.stringMatching(/at most 72 bytes/) });
+      expect(res.body.error.details[0]).toMatchObject({ field: 'newPassword', message: expect.stringMatching(/72 characters or fewer/) });
     }
     const tooLongCurrent = await change(accessToken, { currentPassword: strong73, newPassword: 'Another-Passw0rd!' });
-    expect(tooLongCurrent.body.error.details[0]).toMatchObject({ field: 'currentPassword', message: expect.stringMatching(/at most 72 bytes/) });
+    expect(tooLongCurrent.body.error.details[0]).toMatchObject({ field: 'currentPassword', message: expect.stringMatching(/72 characters or fewer/) });
 
     const ok = await change(accessToken, { currentPassword: DEFAULT_PASSWORD, newPassword: strong72 });
     expect(ok.status).toBe(200);
@@ -123,7 +123,7 @@ describe('I-1: passwords are capped at 72 bytes', () => {
     const admin = await adminSession(app);
     const created = await admin.post('/api/admin/users', { name: 'Maria Santos', email: 'maria@evsu.edu.ph', password: strong73 });
     expect(created.status).toBe(422);
-    expect(created.body.error.details[0]).toMatchObject({ field: 'password', message: expect.stringMatching(/at most 72 bytes/) });
+    expect(created.body.error.details[0]).toMatchObject({ field: 'password', message: expect.stringMatching(/72 characters or fewer/) });
     const teacher = await createUser();
     expect((await admin.put(`/api/admin/users/${teacher.id}/password`, { password: accented })).status).toBe(422);
     expect((await admin.put(`/api/admin/users/${teacher.id}/password`, { password: strong72 })).status).toBe(200);
