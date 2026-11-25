@@ -1,5 +1,12 @@
 import multer from 'multer';
 import { ApiError } from '../utils/ApiError.js';
+import { logger } from '../config/logger.js';
+
+/** Any other upload failure: the library's reason is logged, the user gets a short message. */
+function uploadFailed(req, error) {
+  logger.warn(`[${req.id}] Upload rejected:`, error.code, error.message);
+  return ApiError.badRequest('Upload failed. Please try again.');
+}
 
 const MAX_CSV_BYTES = 1024 * 1024; // 1 MB ≈ 10,000+ student rows
 
@@ -19,10 +26,10 @@ export function uploadCsv(req, res, next) {
   csvUpload(req, res, (error) => {
     if (error instanceof multer.MulterError) {
       if (error.code === 'LIMIT_FILE_SIZE') return next(new ApiError(413, 'PAYLOAD_TOO_LARGE', 'The CSV file must be 1 MB or smaller'));
-      return next(ApiError.badRequest(`Upload failed: ${error.message}`));
+      return next(uploadFailed(req, error));
     }
     if (error) return next(error);
-    if (!req.file) return next(ApiError.badRequest('Attach a CSV file in the "file" field'));
+    if (!req.file) return next(ApiError.badRequest('Choose a CSV file to import.'));
     return next();
   });
 }
@@ -39,10 +46,10 @@ export function uploadAvatar(req, res, next) {
   avatarUpload(req, res, (error) => {
     if (error instanceof multer.MulterError) {
       if (error.code === 'LIMIT_FILE_SIZE') return next(new ApiError(413, 'PAYLOAD_TOO_LARGE', 'The photo must be 1 MB or smaller'));
-      return next(ApiError.badRequest(`Upload failed: ${error.message}`));
+      return next(uploadFailed(req, error));
     }
     if (error) return next(error);
-    if (!req.file) return next(ApiError.badRequest('Attach an image in the "avatar" field'));
+    if (!req.file) return next(ApiError.badRequest('Choose a photo to upload.'));
     return next();
   });
 }

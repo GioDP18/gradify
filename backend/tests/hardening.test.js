@@ -3,10 +3,11 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import express from 'express';
+import mongoose from 'mongoose';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
 import { loadConfig } from '../src/config/env.js';
-import { createErrorHandler } from '../src/middleware/errorHandler.js';
+import { errorHandler } from '../src/middleware/errorHandler.js';
 import { checkPasswordStrength, passwordFitsBcrypt, MAX_PASSWORD_BYTES } from '../src/utils/password.js';
 import { logger } from '../src/config/logger.js';
 import { useTestDatabase } from './helpers/db.js';
@@ -33,32 +34,44 @@ describe('L-3: NODE_ENV on Vercel', () => {
     expect(loadConfig(base).isDevelopment).toBe(true); // local development default is unchanged
   });
 
-  it('exposes stack traces only in local development, never on Vercel', () => {
-    expect(loadConfig({ ...base, NODE_ENV: 'development' }).exposeErrorStacks).toBe(true);
-    expect(loadConfig({ ...base, NODE_ENV: 'development', VERCEL: '1' }).exposeErrorStacks).toBe(false);
-    expect(loadConfig({ ...base, NODE_ENV: 'production', TRUST_PROXY: '1' }).exposeErrorStacks).toBe(false);
-    expect(loadConfig({ ...base, NODE_ENV: 'test' }).exposeErrorStacks).toBe(false);
-  });
 });
 
 describe('L-3: error responses', () => {
-  const crashApp = (exposeStacks) => {
+  const crashApp = (thrown) => {
     const tiny = express();
-    tiny.get('/boom', () => { throw new Error('secret internal detail'); });
-    tiny.use(createErrorHandler({ exposeStacks }));
+    tiny.use((req, res, next) => { req.id = 'req-1'; next(); });
+    tiny.get('/boom', () => { throw thrown(); });
+    tiny.use(errorHandler);
     return tiny;
   };
 
-  it('includes a stack trace only when told to', async () => {
-    const quiet = vi.spyOn(logger, 'error').mockImplementation(() => {});
-    const hidden = await request(crashApp(false)).get('/boom');
-    expect(hidden.status).toBe(500);
-    expect(hidden.body.error).toMatchObject({ code: 'INTERNAL_ERROR', message: 'An unexpected error occurred' });
-    expect(JSON.stringify(hidden.body)).not.toMatch(/stack|secret internal detail/);
+  it('answers an unexpected error with a short message and logs the raw error server-side only', async () => {
+    const logged = vi.spyOn(logger, 'error').mockImplementation(() => {});
+    const res = await request(crashApp(() => new Error('secret internal detail'))).get('/boom');
+    expect(res.status).toBe(500);
+    expect(res.body.error).toEqual({ code: 'INTERNAL_ERROR', message: 'Something went wrong. Please try again.', requestId: 'req-1' });
+    expect(JSON.stringify(res.body)).not.toMatch(/stack|secret internal detail/);
+    expect(logged.mock.calls.flat().join(' ')).toMatch(/req-1.*secret internal detail/s);
+    logged.mockRestore();
+  });
 
-    const shown = await request(crashApp(true)).get('/boom');
-    expect(shown.body.error.stack).toMatch(/secret internal detail/);
-    quiet.mockRestore();
+  it('rewords database errors for the user and keeps their raw text in the log', async () => {
+    const logged = vi.spyOn(logger, 'warn').mockImplementation(() => {});
+    const duplicate = () => Object.assign(new Error('E11000 duplicate key error collection: evsu.students index: studentNumber_1'), { code: 11000, keyValue: { studentNumber: '2026-1' } });
+    const dup = await request(crashApp(duplicate)).get('/boom');
+    expect(dup.status).toBe(409);
+    expect(dup.body.error).toMatchObject({ code: 'CONFLICT', message: 'That already exists.' });
+    expect(JSON.stringify(dup.body)).not.toMatch(/E11000|collection|index/);
+
+    const invalid = new mongoose.Error.ValidationError();
+    invalid.addError('yearLevel', new mongoose.Error.ValidatorError({ message: 'Path `yearLevel` (9) is more than maximum allowed value (6).', path: 'yearLevel' }));
+    const bad = await request(crashApp(() => invalid)).get('/boom');
+    expect(bad.status).toBe(422);
+    expect(bad.body.error.details).toEqual([{ field: 'yearLevel', message: 'This value is not valid.' }]);
+    expect(JSON.stringify(bad.body)).not.toMatch(/Path|maximum allowed/);
+
+    expect(logged.mock.calls.flat().join(' ')).toMatch(/E11000.*maximum allowed/s);
+    logged.mockRestore();
   });
 });
 
@@ -75,15 +88,15 @@ describe('I-1: passwords are capped at 72 bytes', () => {
     expect(accented).toHaveLength(40);
     expect(passwordFitsBcrypt(accented)).toBe(false);
     expect(checkPasswordStrength(strong72)).toEqual([]);
-    expect(checkPasswordStrength(strong73)).toEqual(['at most 72 bytes (72 plain letters; fewer with accents or emoji)']);
-    expect(checkPasswordStrength(accented)).toEqual(['at most 72 bytes (72 plain letters; fewer with accents or emoji)']);
+    expect(checkPasswordStrength(strong73)).toEqual(['72 characters or fewer']);
+    expect(checkPasswordStrength(accented)).toEqual(['72 characters or fewer']);
   });
 
   it('login refuses an over-long password with a clear message, before checking it', async () => {
     const user = await createUser();
     const res = await request(app).post('/api/auth/login').send({ identifier: user.email, password: strong73 });
     expect(res.status).toBe(422);
-    expect(res.body.error.details).toEqual([{ field: 'password', message: 'Password is too long: at most 72 bytes (72 plain letters; fewer with accents or emoji)' }]);
+    expect(res.body.error.details).toEqual([{ field: 'password', message: 'Password is too long. Use 72 characters or fewer.' }]);
     // A 72-byte password is still checked normally.
     expect((await request(app).post('/api/auth/login').send({ identifier: user.email, password: strong72 })).status).toBe(401);
   });
@@ -96,10 +109,10 @@ describe('I-1: passwords are capped at 72 bytes', () => {
     for (const tooLong of [strong73, accented]) {
       const res = await change(accessToken, { currentPassword: DEFAULT_PASSWORD, newPassword: tooLong });
       expect(res.status).toBe(422);
-      expect(res.body.error.details[0]).toMatchObject({ field: 'newPassword', message: expect.stringMatching(/at most 72 bytes/) });
+      expect(res.body.error.details[0]).toMatchObject({ field: 'newPassword', message: expect.stringMatching(/72 characters or fewer/) });
     }
     const tooLongCurrent = await change(accessToken, { currentPassword: strong73, newPassword: 'Another-Passw0rd!' });
-    expect(tooLongCurrent.body.error.details[0]).toMatchObject({ field: 'currentPassword', message: expect.stringMatching(/at most 72 bytes/) });
+    expect(tooLongCurrent.body.error.details[0]).toMatchObject({ field: 'currentPassword', message: expect.stringMatching(/72 characters or fewer/) });
 
     const ok = await change(accessToken, { currentPassword: DEFAULT_PASSWORD, newPassword: strong72 });
     expect(ok.status).toBe(200);
@@ -110,7 +123,7 @@ describe('I-1: passwords are capped at 72 bytes', () => {
     const admin = await adminSession(app);
     const created = await admin.post('/api/admin/users', { name: 'Maria Santos', email: 'maria@evsu.edu.ph', password: strong73 });
     expect(created.status).toBe(422);
-    expect(created.body.error.details[0]).toMatchObject({ field: 'password', message: expect.stringMatching(/at most 72 bytes/) });
+    expect(created.body.error.details[0]).toMatchObject({ field: 'password', message: expect.stringMatching(/72 characters or fewer/) });
     const teacher = await createUser();
     expect((await admin.put(`/api/admin/users/${teacher.id}/password`, { password: accented })).status).toBe(422);
     expect((await admin.put(`/api/admin/users/${teacher.id}/password`, { password: strong72 })).status).toBe(200);

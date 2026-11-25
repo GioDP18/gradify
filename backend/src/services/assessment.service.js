@@ -68,7 +68,7 @@ export function createAssessmentService(type) {
 
   function validateDate(value) {
     const date = parseDateOnly(value);
-    if (!date) throw ApiError.validation([{ field: 'date', message: 'Date must be a valid date (YYYY-MM-DD)' }]);
+    if (!date) throw ApiError.validation([{ field: 'date', message: 'Enter a valid date.' }]);
     return date;
   }
 

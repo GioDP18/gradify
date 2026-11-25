@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Archive, ArchiveRestore, Check, Pencil, Plus, QrCode, School } from 'lucide-react';
 import RefreshButton from '../../components/common/RefreshButton';
+import useRefresh from '../../hooks/useRefresh';
 import { useClassContext, formatTerm } from '../../context/ClassContext';
 import { useArchiveClass, useCreateClass, useRestoreClass, useUpdateClass } from '../../hooks/useClasses';
 import { useToast } from '../../components/common/Toast';
@@ -9,6 +10,7 @@ import QrEnrollmentDialog from '../../components/classes/QrEnrollmentDialog';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import StatusBadge from '../../components/common/StatusBadge';
 import { EmptyState, ErrorState, SkeletonCards } from '../../components/common/States';
+import Segmented from '../../components/common/Segmented';
 
 const FILTERS = [
   { value: 'ACTIVE', label: 'Active' },
@@ -20,6 +22,7 @@ const formatDate = (iso) => new Date(iso).toLocaleDateString('en-PH', { year: 'n
 export default function ClassesPage() {
   const { classes, activeClass, selectClass, workingClass, isLoading, error } = useClassContext();
   const toast = useToast();
+  const refresh = useRefresh([['classes']]);
   const [filter, setFilter] = useState('ACTIVE');
   const [editing, setEditing] = useState(null); // null = closed, {} = new, class = edit
   const [qrFor, setQrFor] = useState(null); // class id whose QR enrollment dialog is open
@@ -30,6 +33,8 @@ export default function ClassesPage() {
   const archiveClass = useArchiveClass();
   const restoreClass = useRestoreClass();
 
+  // Refreshing shows the skeleton too, so a slow reload is visible.
+  const loading = isLoading || refresh.busy;
   const visible = classes.filter((cls) => cls.status === filter);
 
   const handleSubmit = async (values) => {
@@ -77,20 +82,20 @@ export default function ClassesPage() {
       </div>
 
       <div className="evsu-toolbar">
-        <div className="evsu-segmented" role="group" aria-label="Filter classes by status">
+        <Segmented label="Filter classes by status">
           {FILTERS.map((option) => (
             <button key={option.value} type="button" aria-pressed={filter === option.value} onClick={() => setFilter(option.value)}>
               {option.label} ({classes.filter((c) => c.status === option.value).length})
             </button>
           ))}
-        </div>
-        <RefreshButton queryKeys={[['classes']]} label="Refresh classes" />
+        </Segmented>
+        <RefreshButton refresh={refresh} label="Refresh classes" />
       </div>
 
-      {isLoading && <SkeletonCards />}
+      {loading && <SkeletonCards />}
       {error && <ErrorState title="Could not load classes" error={error} />}
 
-      {!isLoading && !error && visible.length === 0 && (
+      {!loading && !error && visible.length === 0 && (
         <div className="evsu-card">
           {filter === 'ACTIVE' ? (
             <EmptyState
@@ -105,7 +110,7 @@ export default function ClassesPage() {
         </div>
       )}
 
-      {!isLoading && visible.length > 0 && (
+      {!loading && visible.length > 0 && (
         <ul className="evsu-grid list-unstyled mb-0">
           {visible.map((cls) => {
             // With Settings → working class off, each page picks its own class: no working class here.

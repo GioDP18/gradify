@@ -24,26 +24,48 @@ export class ApiClientError extends Error {
   }
 }
 
+const GENERIC_MESSAGE = 'Something went wrong. Please try again.';
+
+/**
+ * Used when a failed response carries no message of ours (a proxy or host error page, or a
+ * failed file download): a short sentence for the user, never the status line or raw body.
+ */
+const STATUS_MESSAGES = {
+  400: 'That could not be done. Reload the page and try again.',
+  401: 'Please sign in again.',
+  403: 'You do not have permission to do this.',
+  404: 'Not found.',
+  408: 'This is taking too long. Try again.',
+  409: 'That conflicts with a recent change. Reload and try again.',
+  413: 'That file is too large.',
+  429: 'Too many attempts. Please wait and try again.',
+  502: 'Gradify is unavailable right now. Try again shortly.',
+  503: 'Gradify is unavailable right now. Try again shortly.',
+  504: 'This is taking too long. Try again.',
+};
+
+/** Every failure becomes an ApiClientError whose `message` is safe to show to the user. */
 export function toApiClientError(error) {
   if (error instanceof ApiClientError) return error;
   if (error.response) {
-    const payload = error.response.data?.error ?? {};
+    const { status, data } = error.response;
+    const payload = data?.error ?? {};
     return new ApiClientError({
-      status: error.response.status,
+      status,
       code: payload.code ?? 'HTTP_ERROR',
-      message: payload.message ?? `Request failed with status ${error.response.status}`,
+      message: typeof payload.message === 'string' && payload.message ? payload.message : STATUS_MESSAGES[status] ?? GENERIC_MESSAGE,
       details: payload.details,
       requestId: payload.requestId,
     });
   }
   if (error.code === 'ECONNABORTED') {
-    return new ApiClientError({ status: 0, code: 'TIMEOUT', message: 'The server took too long to respond.' });
+    return new ApiClientError({ status: 0, code: 'TIMEOUT', message: 'This is taking too long. Try again.' });
   }
-  return new ApiClientError({
-    status: 0,
-    code: 'NETWORK_ERROR',
-    message: 'Cannot reach the server. Check your connection and that the API is running.',
-  });
+  if (error.request || error.code === 'ERR_NETWORK') {
+    return new ApiClientError({ status: 0, code: 'NETWORK_ERROR', message: 'No connection. Check your internet and try again.' });
+  }
+  // Not a network failure at all (a bug while preparing the request or reading the reply).
+  return new ApiClientError({ status: 0, code: 'CLIENT_ERROR', message: GENERIC_MESSAGE });
 }
 
 const commonConfig = {

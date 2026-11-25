@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Pencil, Plus, Trash2, School } from 'lucide-react';
 import RefreshButton from '../../components/common/RefreshButton';
+import useRefresh from '../../hooks/useRefresh';
 import { ASSESSMENT_TYPES } from '../../config/assessmentTypes';
 import { useClassContext, formatClassLabel } from '../../context/ClassContext';
 import { useAssessmentList, useCreateAssessment, useUpdateAssessment, useDeleteAssessment } from '../../hooks/useAssessments';
@@ -31,6 +32,7 @@ export default function AssessmentListPage({ typeKey }) {
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const query = useAssessmentList(type, { classId: activeClass?.id, period, status, search: debouncedSearch }, { enabled: Boolean(activeClass) });
+  const refresh = useRefresh([['assessments', type.key]]);
   const createItem = useCreateAssessment(type);
   const updateItem = useUpdateAssessment(type);
   const deleteItem = useDeleteAssessment(type);
@@ -109,7 +111,7 @@ export default function AssessmentListPage({ typeKey }) {
       <div className="evsu-page-header">
         <div className="d-flex flex-wrap align-items-center gap-2">
           <GradingPeriodSelector value={period} onChange={(v) => setParam({ period: v === 'MIDTERM' ? '' : v })} />
-          <RefreshButton queryKeys={[['assessments', type.key]]} label={`Refresh ${type.title.toLowerCase()}`} />
+          <RefreshButton refresh={refresh} label={`Refresh ${type.title.toLowerCase()}`} />
           <span className="small text-muted-evsu">Counts toward <strong>{type.component}</strong></span>
         </div>
         <button type="button" className="btn btn-primary d-inline-flex align-items-center gap-2" onClick={() => setFormTarget({})}>
@@ -133,7 +135,7 @@ export default function AssessmentListPage({ typeKey }) {
           caption={`${periodLabel(period)} ${type.title}`}
           columns={columns}
           rows={query.data ?? []}
-          loading={query.isPending}
+          loading={query.isPending || refresh.busy}
           empty={
             search || status ? (
               <EmptyState title="Nothing matches your filters" />

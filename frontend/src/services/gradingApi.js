@@ -7,6 +7,7 @@ export const getClassGrades = (period, classId) => apiClient.get(`/grading/${per
 export const getStudentGrade = (period, classId, studentId) => apiClient.get(`/grading/${period}/student/${studentId}`, { params: { classId } }).then(data);
 export const getStudentGradesAcrossClasses = (studentId) => apiClient.get(`/grading/student/${studentId}`).then(data);
 export const recalculateClass = (classId) => apiClient.post('/grading/recalculate', { classId }).then(data);
+export const recalculateStudent = (classId, studentId) => apiClient.post('/grading/recalculate', { classId, studentId }).then(data);
 export const getConfiguration = () => apiClient.get('/grading/configuration').then(data);
 export const getConfigurationVersions = () => apiClient.get('/grading/configuration/versions').then(data);
 export const saveConfiguration = (changes) => apiClient.post('/grading/configuration', changes, { timeout: 120000 }).then(data);

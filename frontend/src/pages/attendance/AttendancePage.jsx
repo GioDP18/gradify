@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { CalendarCheck, CalendarPlus, Pencil, Trash2, School } from 'lucide-react';
 import RefreshButton from '../../components/common/RefreshButton';
+import useRefresh from '../../hooks/useRefresh';
 import { useClassContext, formatClassLabel } from '../../context/ClassContext';
 import { useAttendanceSessions, useAttendanceSummary, useCreateSession, useUpdateSession, useDeleteSession } from '../../hooks/useAttendance';
 import { useToast } from '../../components/common/Toast';
@@ -13,6 +14,7 @@ import { EmptyState, ErrorState } from '../../components/common/States';
 import SessionFormModal from '../../components/attendance/SessionFormModal';
 import { formatDateOnly, formatPercent } from '../../utils/format';
 import './attendance.css';
+import Segmented from '../../components/common/Segmented';
 
 const PAGE_SIZE = 25;
 
@@ -25,7 +27,7 @@ function StatTile({ label, value, tone }) {
   );
 }
 
-function SummaryTab({ classId, period }) {
+function SummaryTab({ classId, period, refreshing }) {
   const { data, isPending, error, refetch } = useAttendanceSummary({ classId, period }, { enabled: Boolean(classId) });
   if (error) return <div className="evsu-card"><ErrorState title="Could not load the summary" error={error} onRetry={refetch} /></div>;
 
@@ -56,7 +58,7 @@ function SummaryTab({ classId, period }) {
         columns={columns}
         rows={rows}
         rowKey={(s) => s.studentId}
-        loading={isPending}
+        loading={isPending || refreshing}
         empty={<EmptyState icon={CalendarCheck} title={`No ${periodLabel(period)} attendance yet`} description="Summaries appear after the first session is recorded." />}
       />
     </>
@@ -74,6 +76,7 @@ export default function AttendancePage() {
   const to = params.get('to') ?? '';
   const page = Math.max(1, Number(params.get('page')) || 1);
 
+  const refresh = useRefresh([['attendance']]);
   const [formTarget, setFormTarget] = useState(null); // null | {} (new) | session (edit)
   const [deleteTarget, setDeleteTarget] = useState(null);
 
@@ -162,11 +165,11 @@ export default function AttendancePage() {
       <div className="evsu-page-header">
         <div className="d-flex flex-wrap align-items-center gap-2">
           <GradingPeriodSelector value={period} onChange={(value) => setParam({ period: value === 'MIDTERM' ? '' : value })} />
-          <div className="evsu-segmented" role="group" aria-label="View">
+          <Segmented label="View">
             <button type="button" aria-pressed={view === 'sessions'} onClick={() => setParam({ view: '' })}>Sessions</button>
             <button type="button" aria-pressed={view === 'summary'} onClick={() => setParam({ view: 'summary' })}>Student summary</button>
-          </div>
-          <RefreshButton queryKeys={[['attendance']]} label="Refresh attendance" />
+          </Segmented>
+          <RefreshButton refresh={refresh} label="Refresh attendance" />
         </div>
         <button type="button" className="btn btn-primary d-inline-flex align-items-center gap-2" onClick={() => setFormTarget({})} disabled={!activeClass}>
           <CalendarPlus size={18} aria-hidden="true" /> New session
@@ -174,7 +177,7 @@ export default function AttendancePage() {
       </div>
 
       {view === 'summary' ? (
-        <SummaryTab classId={activeClass?.id} period={period} />
+        <SummaryTab classId={activeClass?.id} period={period} refreshing={refresh.busy} />
       ) : (
         <>
           <div className="evsu-toolbar">
@@ -193,7 +196,7 @@ export default function AttendancePage() {
               caption={`${periodLabel(period)} attendance sessions`}
               columns={columns}
               rows={data?.items ?? []}
-              loading={sessionsQuery.isPending}
+              loading={sessionsQuery.isPending || refresh.busy}
               empty={
                 from || to ? (
                   <EmptyState title="No sessions in this date range" />

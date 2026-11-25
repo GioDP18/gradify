@@ -26,7 +26,7 @@ router.post(
 router.put(
   '/users/:id/status',
   requireTrustedOrigin,
-  validate([id, body('status').isIn(['ACTIVE', 'DISABLED']).withMessage('status must be ACTIVE or DISABLED')]),
+  validate([id, body('status').isIn(['ACTIVE', 'DISABLED']).withMessage('Choose Active or Disabled.')]),
   async (req, res) => sendSuccess(res, await admin.setStatus(req.user.id, req.params.id, req.body.status, req)),
 );
 router.put(

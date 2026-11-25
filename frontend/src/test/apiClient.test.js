@@ -28,6 +28,14 @@ describe('toApiClientError', () => {
     expect(toApiClientError({ code: 'ECONNABORTED' })).toMatchObject({ status: 0, code: 'TIMEOUT' });
     expect(toApiClientError({ response: { status: 502, data: '<html>' } })).toMatchObject({ status: 502, code: 'HTTP_ERROR' });
   });
+
+  it('never shows a status line, raw body, or exception text to the user', () => {
+    expect(toApiClientError({ response: { status: 502, data: '<html>Bad Gateway</html>' } }).message).toBe('Gradify is unavailable right now. Try again shortly.');
+    expect(toApiClientError({ response: { status: 500, data: new Blob(['{}']) } }).message).toBe('Something went wrong. Please try again.'); // a failed file download
+    expect(toApiClientError({ response: { status: 418, data: { error: { message: { nested: true } } } } }).message).toBe('Something went wrong. Please try again.');
+    expect(toApiClientError({ code: 'ERR_NETWORK', message: 'Network Error' }).message).toBe('No connection. Check your internet and try again.');
+    expect(toApiClientError(new TypeError("Cannot read properties of undefined (reading 'data')"))).toMatchObject({ code: 'CLIENT_ERROR', message: 'Something went wrong. Please try again.' });
+  });
 });
 
 describe('automatic session refresh', () => {

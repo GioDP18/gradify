@@ -81,13 +81,25 @@ export function loadConfig(source = process.env) {
     if (!isIP(server)) errors.push(`DNS_SERVERS entry "${server}" must be an IP address`);
   }
 
+  // First-run seeding (services/seed.service.js). Off unless SEED_DATABASE is exactly "true".
+  const seedEnabled = toBool(source, 'SEED_DATABASE', false, errors);
+  const seedAdmin = {
+    name: source.SEED_ADMIN_NAME?.trim() || 'Administrator',
+    email: source.SEED_ADMIN_EMAIL?.trim().toLowerCase() || '',
+    username: source.SEED_ADMIN_USERNAME?.trim().toLowerCase() || '',
+    password: source.SEED_ADMIN_PASSWORD || '',
+  };
+  if (seedEnabled) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(seedAdmin.email)) errors.push('SEED_ADMIN_EMAIL must be a valid email address when SEED_DATABASE is true');
+    if (seedAdmin.password.length < 12) errors.push('SEED_ADMIN_PASSWORD must be at least 12 characters when SEED_DATABASE is true');
+    if (seedAdmin.username && !/^[a-z0-9._-]{3,40}$/.test(seedAdmin.username)) errors.push('SEED_ADMIN_USERNAME must be 3–40 letters, numbers, dots, dashes, or underscores');
+  }
+
   const config = {
     nodeEnv,
     isProduction: nodeEnv === 'production',
     isDevelopment: nodeEnv === 'development',
     isTest: nodeEnv === 'test',
-    // Stack traces in error responses: local development only, never on a hosted deployment.
-    exposeErrorStacks: nodeEnv === 'development' && !source.VERCEL,
     port: toInt(source, 'PORT', 5000, { min: 1, max: 65535 }, errors),
     trustProxy: toInt(source, 'TRUST_PROXY', 0, { min: 0, max: 10 }, errors),
     mongodb: {
@@ -106,6 +118,8 @@ export function loadConfig(source = process.env) {
     cookieSecure: toBool(source, 'COOKIE_SECURE', nodeEnv === 'production', errors),
     clientUrls,
     timezone: source.APP_TIMEZONE || 'Asia/Manila',
+    // Seed an empty database on startup: collections, indexes, and the first administrator.
+    seed: Object.freeze({ enabled: seedEnabled, admin: Object.freeze(seedAdmin) }),
     // Shared secret Vercel Cron sends as "Authorization: Bearer <CRON_SECRET>" to /api/internal/sweep.
     cronSecret: source.CRON_SECRET?.trim() || null,
     // Failed-login limit per client IP per 15 minutes (0 disables it; per-account limits still apply).

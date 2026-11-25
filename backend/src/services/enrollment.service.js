@@ -77,7 +77,7 @@ export async function enrollStudentIds(instructorId, classId, studentIds, req, {
 
 export async function enrollStudents(instructorId, classId, studentIds, req) {
   for (const id of studentIds) {
-    if (!mongoose.isValidObjectId(id)) throw ApiError.validation([{ field: 'studentIds', message: 'Every student ID must be valid' }]);
+    if (!mongoose.isValidObjectId(id)) throw ApiError.validation([{ field: 'studentIds', message: 'One of the students was not found. Reload and try again.' }]);
   }
   return runInTransaction((session) => enrollStudentIds(instructorId, classId, studentIds, req, { session }));
 }

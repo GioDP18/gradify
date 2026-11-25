@@ -123,7 +123,7 @@ export async function login({ identifier, password, remember = false }, req) {
  * Exchanges a refresh token for a new access token and a rotated refresh token.
  */
 export async function refreshSession(token, req) {
-  if (!token) throw ApiError.unauthorized('No active session');
+  if (!token) throw ApiError.unauthorized('Please sign in.');
   const tokenHash = hashToken(token);
   const now = new Date();
 
@@ -138,7 +138,7 @@ export async function refreshSession(token, req) {
     const existing = await RefreshToken.findOne({ tokenHash });
     if (existing?.revokedReason === 'ROTATED') {
       if (now - existing.revokedAt <= ROTATION_GRACE_MS) {
-        throw new ApiError(401, 'REFRESH_RACE', 'Session was refreshed by another request; retry');
+        throw new ApiError(401, 'REFRESH_RACE', 'Please try again.');
       }
       // A rotated token was replayed later: assume theft and end every session in the family.
       await RefreshToken.updateMany(

@@ -19,13 +19,13 @@ export async function authenticate(req, res, next) {
     payload = verifyAccessToken(token);
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
-      return next(new ApiError(401, 'TOKEN_EXPIRED', 'Access token expired'));
+      return next(new ApiError(401, 'TOKEN_EXPIRED', 'Session expired. Please sign in again.'));
     }
-    return next(ApiError.unauthorized('Invalid access token'));
+    return next(ApiError.unauthorized('Session expired. Please sign in again.'));
   }
 
   const user = await User.findById(payload.sub).select('name email role status tokenVersion').lean();
-  if (!user || user.status !== USER_STATUSES.ACTIVE) return next(ApiError.unauthorized('Account is not active'));
+  if (!user || user.status !== USER_STATUSES.ACTIVE) return next(ApiError.unauthorized('This account is not active.'));
   if ((payload.tv ?? 0) !== (user.tokenVersion ?? 0)) return next(ApiError.unauthorized('Session expired. Please sign in again.'));
 
   req.user = { id: user._id.toString(), _id: user._id, name: user.name, email: user.email, role: user.role };

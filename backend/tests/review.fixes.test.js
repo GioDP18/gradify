@@ -161,7 +161,7 @@ describe('#6 / #7 / dates: malformed input is a 4xx, never a 500', () => {
   it('rejects repeated query parameters', async () => {
     const res = await me.get('/api/students?course=A&course=B');
     expect(res.status).toBe(400);
-    expect(res.body.error.message).toMatch(/"course" may appear only once/);
+    expect(res.body.error).toMatchObject({ message: 'That could not be done. Reload the page and try again.', details: { source: 'query', field: 'course' } });
     expect((await me.get(`/api/quizzes?classId=${cls.id}&search=a&search=b`)).status).toBe(400);
   });
 

@@ -8,6 +8,7 @@ import { ClassProvider } from '../../context/ClassContext';
 import { useToast } from '../common/Toast';
 import { FullPageSpinner } from '../common/Spinner';
 import './layout.css';
+import '../../styles/app-chrome.css';
 
 const SIDEBAR_ID = 'evsu-sidebar';
 
@@ -35,7 +36,7 @@ export default function AppLayout() {
     try {
       await logout();
     } catch {
-      toast.error('Could not log out: the server did not respond. You are still signed in. Check your connection and try again.');
+      toast.error('Could not sign out. You are still signed in. Check your internet and try again.');
       return;
     }
     toast.info('You have been logged out.');

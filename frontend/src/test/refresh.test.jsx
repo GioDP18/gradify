@@ -35,6 +35,23 @@ describe('refresh buttons', () => {
     await waitFor(() => expect(vi.mocked(studentsApi.listStudents).mock.calls.length).toBeGreaterThan(before));
   });
 
+  it('shows the loading skeleton until a slow refresh finishes', async () => {
+    vi.mocked(studentsApi.listStudents).mockResolvedValue({ items: [{ id: 's1', studentNumber: '2026-00001', fullName: 'Bautista, Ana', firstName: 'Ana', lastName: 'Bautista' }], meta: { page: 1, limit: 20, total: 1, totalPages: 1 } });
+    renderApp('/students');
+    expect(await screen.findByText('Bautista, Ana')).toBeInTheDocument();
+
+    let finish;
+    vi.mocked(studentsApi.listStudents).mockImplementation(() => new Promise((resolve) => { finish = () => resolve(page); }));
+    await userEvent.click(screen.getByRole('button', { name: 'Refresh students' }));
+    await waitFor(() => expect(screen.queryByText('Bautista, Ana')).not.toBeInTheDocument());
+    expect(screen.getByRole('table')).toHaveAttribute('aria-busy', 'true');
+    expect(screen.getByRole('button', { name: 'Refresh students' })).toBeDisabled();
+
+    finish();
+    await waitFor(() => expect(screen.getByRole('table')).toHaveAttribute('aria-busy', 'false'));
+    expect(screen.getByRole('button', { name: 'Refresh students' })).toBeEnabled();
+  });
+
   it('reloads classes and an assessment list', async () => {
     const { router } = renderApp('/classes');
     await userEvent.click(await screen.findByRole('button', { name: 'Refresh classes' }));

@@ -1,0 +1,378 @@
+/*
+ * Authenticated workspace chrome.
+ * Loaded with the app shell only. Every rule is scoped to the signed-in layout,
+ * its dialogs, or its toasts, so the sign-in page is unchanged.
+ */
+
+.evsu-shell {
+  --workspace-gutter: clamp(1rem, 2.7vw, 2.5rem);
+  background:
+    radial-gradient(1100px 460px at 100% -12%, rgba(240, 183, 56, 0.18), transparent 56%),
+    radial-gradient(820px 420px at -8% 108%, rgba(138, 18, 24, 0.06), transparent 52%),
+    #f6f1eb;
+}
+
+/* ── Sidebar ── */
+.evsu-shell .evsu-sidebar__brand {
+  padding: 1.4rem 1.15rem 1.15rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.evsu-shell .evsu-sidebar__nav {
+  padding: 0.85rem 0.75rem 1.1rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+}
+.evsu-shell .evsu-sidebar__group {
+  margin: 1.15rem 0 0.4rem 0.7rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
+}
+.evsu-shell .evsu-nav-link {
+  gap: 0.7rem;
+  padding: 0.48rem 0.65rem;
+  border-radius: 12px;
+}
+.evsu-shell .evsu-nav-link svg {
+  width: 18px;
+  height: 18px;
+  padding: 6px;
+  box-sizing: content-box;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.78);
+}
+.evsu-shell .evsu-nav-link:hover svg {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+.evsu-shell .evsu-nav-link.active {
+  padding-right: 1.85rem;
+  background: linear-gradient(100deg, #fff 0%, #fffaf5 100%);
+  box-shadow: 0 8px 20px -12px rgba(0, 0, 0, 0.6), inset 3px 0 0 var(--g-gold);
+}
+.evsu-shell .evsu-nav-link.active svg {
+  background: var(--g-maroon-tint);
+  color: var(--g-maroon);
+}
+.evsu-shell .evsu-nav-link.is-disabled svg {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.28);
+}
+.evsu-shell .evsu-sidebar__footer {
+  padding: 0.7rem 0.75rem 0.85rem;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+/* ── Top bar ── */
+.evsu-shell .evsu-topbar {
+  background: rgba(255, 252, 248, 0.86);
+  border-bottom: 1px solid rgba(70, 35, 25, 0.08);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7), 0 10px 26px -24px rgba(70, 35, 25, 0.55);
+}
+.evsu-shell .evsu-topbar::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(240, 183, 56, 0.55), transparent);
+  pointer-events: none;
+}
+.evsu-shell .evsu-topbar__title h1 {
+  font-size: 1.45rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+.evsu-shell .evsu-topbar__menu {
+  display: inline-grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 12px;
+  background: rgba(138, 18, 24, 0.07);
+}
+.evsu-shell .evsu-topbar__menu:hover {
+  background: rgba(138, 18, 24, 0.13);
+}
+.evsu-shell .evsu-breadcrumbs {
+  font-size: 0.78rem;
+  letter-spacing: 0.01em;
+}
+.evsu-shell .evsu-account-btn {
+  border: 1px solid rgba(70, 35, 25, 0.06);
+}
+.evsu-shell .evsu-account-btn .fw-semibold {
+  display: block;
+  max-width: 11rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.evsu-shell .evsu-account-btn > svg {
+  transition: transform var(--g-transition);
+}
+.evsu-shell .evsu-account-btn[aria-expanded='true'] {
+  box-shadow: 0 0 0 3px rgba(138, 18, 24, 0.12);
+}
+.evsu-shell .evsu-account-btn[aria-expanded='true'] > svg {
+  transform: rotate(180deg);
+}
+.evsu-shell .evsu-class-switcher .form-select {
+  border: 1px solid rgba(70, 35, 25, 0.08);
+  min-height: 2.55rem;
+  box-shadow: 0 4px 14px -12px rgba(70, 35, 25, 0.55);
+}
+
+/* ── Page canvas ── */
+.evsu-shell .evsu-content {
+  padding: 1.75rem var(--workspace-gutter) 3.5rem;
+  margin-inline: auto;
+}
+.evsu-shell .evsu-page-header {
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(70, 35, 25, 0.08);
+}
+.evsu-shell .evsu-page-header h1,
+.evsu-shell .evsu-page-header h2 {
+  position: relative;
+  margin-bottom: 0.35rem;
+  padding-left: 0.9rem;
+}
+.evsu-shell .evsu-page-header h1::before,
+.evsu-shell .evsu-page-header h2::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.12em;
+  bottom: 0.12em;
+  width: 4px;
+  border-radius: 999px;
+  background: linear-gradient(var(--g-maroon), var(--g-gold));
+}
+.evsu-shell .evsu-page-header .text-muted-evsu {
+  max-width: 62ch;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.evsu-shell .evsu-working-class {
+  position: sticky;
+  top: calc(var(--evsu-topbar-height) + 0.65rem);
+  z-index: 15;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(10px);
+  border-color: rgba(70, 35, 25, 0.08);
+  box-shadow: 0 8px 20px -16px rgba(70, 35, 25, 0.45), inset 3px 0 0 var(--g-gold);
+}
+
+/* ── Surfaces ── */
+.evsu-shell .evsu-card {
+  border-color: rgba(70, 35, 25, 0.07);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 1px 2px rgba(70, 35, 25, 0.04),
+    0 16px 36px -22px rgba(70, 35, 25, 0.28);
+}
+.evsu-shell .evsu-card:not(.evsu-class-card):not(.evsu-stat-card) {
+  transition: border-color var(--g-transition), box-shadow var(--g-transition);
+}
+.evsu-shell .evsu-card:not(.evsu-class-card):not(.evsu-stat-card):hover {
+  border-color: rgba(138, 18, 24, 0.11);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 2px 4px rgba(70, 35, 25, 0.04),
+    0 20px 42px -24px rgba(70, 35, 25, 0.3);
+}
+.evsu-shell .evsu-card h2,
+.evsu-shell .evsu-card h3 {
+  letter-spacing: -0.015em;
+}
+.evsu-shell .evsu-card > .d-flex:first-child,
+.evsu-shell .evsu-card > .d-md-flex:first-child {
+  padding-bottom: 0.9rem;
+  margin-bottom: 0.9rem !important;
+  border-bottom: 1px solid var(--g-rule);
+}
+.evsu-shell .evsu-class-card {
+  transition: transform var(--g-transition), box-shadow var(--g-transition), border-color var(--g-transition);
+}
+.evsu-shell .evsu-class-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(138, 18, 24, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 10px 28px -16px rgba(70, 35, 25, 0.35);
+}
+.evsu-shell .evsu-class-card > .mt-auto {
+  margin-top: 0.35rem !important;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--g-rule);
+}
+.evsu-shell .evsu-stat-card {
+  overflow: hidden;
+}
+.evsu-shell .evsu-stat-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.85rem;
+  bottom: 0.85rem;
+  width: 3px;
+  border-radius: 999px;
+  background: var(--g-maroon);
+  opacity: 0.85;
+}
+.evsu-shell .evsu-stat-card:has(.evsu-stat-icon--ok)::before { background: var(--g-success); }
+.evsu-shell .evsu-stat-card:has(.evsu-stat-icon--error)::before { background: var(--g-danger); }
+.evsu-shell .evsu-stat-card:has(.evsu-stat-icon--warn)::before { background: var(--g-warning); }
+.evsu-shell .evsu-stat-card:has(.evsu-stat-icon--info)::before { background: var(--g-info); }
+
+/* ── Controls ── */
+.evsu-shell .evsu-segmented {
+  background: #fff;
+  border: 1px solid rgba(70, 35, 25, 0.08);
+  box-shadow: 0 1px 2px rgba(70, 35, 25, 0.04);
+}
+.evsu-shell .evsu-segmented button[aria-pressed='true'],
+.evsu-shell .evsu-segmented__link[aria-current='page'] {
+  background: var(--g-maroon);
+  color: #fff;
+  box-shadow: none;
+}
+/* With the sliding highlight, the maroon fill is the moving pill, not the button. */
+.evsu-shell .evsu-segmented.has-slider {
+  --seg-pill: var(--g-maroon);
+  --seg-pill-shadow: none;
+}
+.evsu-shell .evsu-segmented.has-slider button[aria-pressed='true'],
+.evsu-shell .evsu-segmented.has-slider .evsu-segmented__link[aria-current='page'] {
+  background: transparent;
+}
+.evsu-shell .evsu-toolbar {
+  padding: 0.65rem 0.8rem;
+  margin-bottom: 1.35rem;
+  border: 1px solid rgba(70, 35, 25, 0.07);
+  border-radius: var(--g-radius-tile);
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow: 0 8px 24px -22px rgba(70, 35, 25, 0.5);
+}
+.evsu-shell .btn-primary {
+  box-shadow: 0 8px 18px -10px rgba(138, 18, 24, 0.68);
+}
+.evsu-shell .btn-primary:hover {
+  transform: translateY(-1px);
+}
+.evsu-shell .evsu-search .form-control {
+  background: #fff;
+  border-color: rgba(70, 35, 25, 0.1);
+  box-shadow: 0 1px 2px rgba(70, 35, 25, 0.04);
+}
+.evsu-shell .form-control,
+.evsu-shell .form-select {
+  background-color: #fff;
+}
+
+/* ── Tables ── */
+.evsu-shell .evsu-table thead th {
+  background: #f4efe9;
+  color: var(--g-ink-soft);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.evsu-shell .evsu-table .evsu-th-sub {
+  letter-spacing: 0;
+  text-transform: none;
+  font-size: 0.75rem;
+}
+.evsu-shell .evsu-table tbody tr:hover {
+  background: #fbf7f3;
+}
+.evsu-shell .evsu-table tbody tr td:first-child,
+.evsu-shell .evsu-table tbody tr th:first-child {
+  border-left: 3px solid transparent;
+}
+.evsu-shell .evsu-table tbody tr:hover td:first-child,
+.evsu-shell .evsu-table tbody tr:hover th:first-child {
+  border-left-color: var(--g-gold);
+}
+.evsu-shell .evsu-table-wrap {
+  border-color: rgba(70, 35, 25, 0.08);
+  box-shadow: 0 10px 28px -24px rgba(70, 35, 25, 0.45);
+}
+.evsu-shell .evsu-table a {
+  text-underline-offset: 0.18em;
+}
+
+/* ── Dialogs & toasts (portaled outside the shell) ── */
+.evsu-modal {
+  overflow: hidden;
+  border: 1px solid rgba(70, 35, 25, 0.06);
+}
+.evsu-modal::before {
+  content: '';
+  display: block;
+  height: 4px;
+  background: linear-gradient(90deg, var(--g-maroon), var(--g-gold));
+}
+.evsu-modal .modal-header {
+  padding-top: 1.15rem;
+}
+.modal-backdrop.show {
+  background: #3a1814;
+  opacity: 0.46;
+}
+.evsu-toasts {
+  right: 1.5rem;
+  bottom: 1.5rem;
+}
+.evsu-toast {
+  border-radius: 16px;
+  box-shadow: 0 16px 40px -18px rgba(40, 12, 12, 0.55);
+}
+
+@media (max-width: 575.98px) {
+  .evsu-shell .evsu-content {
+    padding: 1.1rem 1rem 2.5rem;
+  }
+  .evsu-shell .evsu-page-header {
+    align-items: flex-start;
+    padding-bottom: 0.85rem;
+  }
+  .evsu-shell .evsu-toolbar {
+    align-items: stretch;
+    padding: 0.6rem;
+  }
+  .evsu-shell .evsu-toolbar > * {
+    flex: 1 1 100%;
+  }
+  .evsu-shell .evsu-toolbar .evsu-segmented,
+  .evsu-shell .evsu-toolbar .btn,
+  .evsu-shell .evsu-toolbar .form-select {
+    width: 100%;
+  }
+  .evsu-shell .evsu-working-class {
+    position: static;
+  }
+  .evsu-shell .evsu-topbar__title h1 {
+    font-size: 1.2rem;
+  }
+  .evsu-shell .evsu-account-btn .fw-semibold {
+    max-width: 8rem;
+  }
+}
+
+@media print {
+  .evsu-shell {
+    background: #fff !important;
+  }
+  .evsu-shell .evsu-working-class {
+    position: static;
+    box-shadow: none;
+  }
+}

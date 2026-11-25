@@ -125,7 +125,7 @@ describe('login page', () => {
     const { router } = renderApp('/');
     await userEvent.click(await screen.findByRole('button', { name: /Maria Santos/ }));
     await userEvent.click(screen.getByRole('menuitem', { name: /log out/i }));
-    expect(await screen.findByText(/Could not log out/)).toBeInTheDocument();
+    expect(await screen.findByText(/Could not sign out/)).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/');
     expect(screen.getByRole('button', { name: /Maria Santos/ })).toBeInTheDocument();
   });

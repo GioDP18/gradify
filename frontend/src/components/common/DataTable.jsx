@@ -88,7 +88,8 @@ export default function DataTable({
           </tr>
         </thead>
         <tbody>
-          {loading && rows.length === 0 &&
+          {/* While loading, skeleton rows replace any rows already shown (a refresh keeps the old rows cached). */}
+          {loading &&
             Array.from({ length: 5 }, (_, i) => (
               <tr key={`skeleton-${i}`}>
                 {selectable && <td />}
@@ -102,7 +103,7 @@ export default function DataTable({
               <td colSpan={columns.length + (selectable ? 1 : 0)}>{empty}</td>
             </tr>
           )}
-          {rows.map((row) => {
+          {!loading && rows.map((row) => {
             const id = rowKey(row);
             const selected = selectable && selectedIds.has(id);
             return (

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Download, Printer, RefreshCw, School, Settings2, TriangleAlert } from 'lucide-react';
+import { Calculator, Download, Printer, RefreshCw, School, Settings2, TriangleAlert } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useClassContext, formatClassLabel, formatTerm } from '../../context/ClassContext';
 import { useClassGrades, useRecalculateClass } from '../../hooks/useGrading';
@@ -16,6 +16,7 @@ import GradeChip from '../../components/grading/GradeChip';
 import { CHART, bucketFill } from '../../config/chartTheme';
 import PrintHeader from '../../components/grading/PrintHeader';
 import { formatPercentFixed } from '../../utils/format';
+import Segmented from '../../components/common/Segmented';
 
 export const GRADING_TABS = [
   { value: 'midterm', label: 'Midterm' },
@@ -174,6 +175,17 @@ export default function GradingPage() {
     { key: 'percentage', header: isOverall ? 'Final %' : 'Computed %', sortable: true, className: 'text-end', render: (r) => pct(r, r.percentage) },
     { key: 'grade', header: 'Grade', sortable: true, className: 'text-end', render: (r) => (r.current ? <GradeChip grade={r.grade} /> : <GradeChip text="—" />) },
     { key: 'remarks', header: 'Remarks', className: 'text-nowrap', render: (r) => <GradeStatusBadge result={r} passingGrade={config?.passingGrade} /> },
+    {
+      key: 'actions',
+      header: 'Actions',
+      hideLabel: true,
+      className: 'text-end text-nowrap no-print',
+      render: (r) => (
+        <Link to={reportLink(r.studentId)} className="btn btn-sm btn-light" aria-label={`View calculation for ${r.fullName}`} title="View calculation">
+          <Calculator size={15} aria-hidden="true" />
+        </Link>
+      ),
+    },
   ];
 
   return (
@@ -184,13 +196,13 @@ export default function GradingPage() {
       />
 
       <div className="evsu-page-header no-print">
-        <div className="evsu-segmented" role="group" aria-label="Grading period">
+        <Segmented label="Grading period">
           {GRADING_TABS.map((tab) => (
             <button key={tab.value} type="button" aria-pressed={period === tab.value} onClick={() => setParams(tab.value === 'midterm' ? {} : { period: tab.value }, { replace: true })}>
               {tab.label}
             </button>
           ))}
-        </div>
+        </Segmented>
         <div className="d-flex flex-wrap gap-2">
           <button type="button" className="btn btn-light d-inline-flex align-items-center gap-2" onClick={handleRecalculate} disabled={recalc.isPending || !activeClass}>
             {recalc.isPending ? <Spinner size="sm" label="" /> : <RefreshCw size={16} aria-hidden="true" />} Recalculate

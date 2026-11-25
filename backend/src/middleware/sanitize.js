@@ -36,12 +36,12 @@ export function rejectUnsafeKeys(req, res, next) {
   // No endpoint accepts a list in the query string; ?x=a&x=b would otherwise reach code expecting a string.
   const repeated = Object.entries(req.query ?? {}).find(([, value]) => Array.isArray(value));
   if (repeated) {
-    return next(ApiError.badRequest(`Query parameter "${repeated[0]}" may appear only once`, { source: 'query', field: repeated[0] }));
+    return next(ApiError.badRequest('That could not be done. Reload the page and try again.', { source: 'query', field: repeated[0] }));
   }
   for (const [source, value] of [['body', req.body], ['query', req.query], ['params', req.params]]) {
     const unsafe = findUnsafeKey(value);
     if (unsafe) {
-      return next(ApiError.badRequest('Request contains a disallowed field name', { source, field: unsafe }));
+      return next(ApiError.badRequest('That could not be done. Reload the page and try again.', { source, field: unsafe }));
     }
   }
   return next();

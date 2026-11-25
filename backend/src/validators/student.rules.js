@@ -55,7 +55,7 @@ const FIELDS = {
   enrollmentStatus: {
     required: false,
     normalize: (v) => squish(v).toUpperCase(),
-    check: (v) => STUDENT_STATUSES.includes(v) || `Status must be one of ${STUDENT_STATUSES.join(', ')}`,
+    check: (v) => STUDENT_STATUSES.includes(v) || 'Choose a valid status.',
   },
 };
 
@@ -90,7 +90,7 @@ export function validateStudentInput(input, { partial = false } = {}) {
     const raw = source[field];
 
     if (raw !== undefined && raw !== null && typeof raw === 'object') {
-      errors.push({ field, message: `${LABELS[field]} has an invalid type` });
+      errors.push({ field, message: `${LABELS[field]} is not valid` });
       continue;
     }
     if (isBlank(raw)) {

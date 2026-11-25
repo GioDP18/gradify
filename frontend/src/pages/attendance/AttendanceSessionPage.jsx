@@ -14,6 +14,7 @@ import Spinner from '../../components/common/Spinner';
 import { ErrorState, Skeleton } from '../../components/common/States';
 import { formatDateOnly, formatPercent } from '../../utils/format';
 import './attendance.css';
+import Segmented from '../../components/common/Segmented';
 
 export default function AttendanceSessionPage() {
   const { id } = useParams();
@@ -158,14 +159,14 @@ export default function AttendanceSessionPage() {
 
       <div className="evsu-toolbar">
         <SearchBar value={search} onChange={setSearch} placeholder="Find a student" label="Find a student in this session" />
-        <div className="evsu-segmented" role="group" aria-label="Show students by status">
+        <Segmented label="Show students by status">
           <button type="button" aria-pressed={statusFilter === ''} onClick={() => setStatusFilter('')}>All ({records.length})</button>
           {ATTENDANCE_STATUSES.map((s) => (
             <button key={s.value} type="button" aria-pressed={statusFilter === s.value} onClick={() => setStatusFilter(s.value)}>
               {s.label} ({counts[s.value]})
             </button>
           ))}
-        </div>
+        </Segmented>
       </div>
 
       {selected.size > 0 && (

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Archive, ArchiveRestore, Download, Pencil, Plus, QrCode, Upload, UserMinus, UserPlus, Users, Eye } from 'lucide-react';
 import RefreshButton from '../../components/common/RefreshButton';
+import useRefresh from '../../hooks/useRefresh';
 import { useClassContext, formatClassLabel } from '../../context/ClassContext';
 import {
   useStudentList, useStudentFacets, useCreateStudent, useUpdateStudent, useArchiveStudent, useRestoreStudent,
@@ -21,6 +22,7 @@ import StudentFormModal, { STUDENT_STATUS_OPTIONS } from '../../components/stude
 import ImportStudentsModal from '../../components/students/ImportStudentsModal';
 import DropEnrollmentDialog from '../../components/students/DropEnrollmentDialog';
 import QrEnrollmentDialog from '../../components/classes/QrEnrollmentDialog';
+import Segmented from '../../components/common/Segmented';
 
 const PAGE_SIZE = 20;
 
@@ -93,6 +95,7 @@ export default function StudentsPage() {
   );
 
   const { data, isPending, isFetching, error, refetch } = useStudentList(query);
+  const refresh = useRefresh([['students'], ['classes']]);
   const facets = useStudentFacets().data;
   const rows = data?.items ?? [];
 
@@ -252,14 +255,14 @@ export default function StudentsPage() {
     <>
       <div className="evsu-page-header">
         <div className="d-flex flex-wrap align-items-center gap-2">
-          <div className="evsu-segmented" role="group" aria-label="Which students to show">
+          <Segmented label="Which students to show">
             <button type="button" aria-pressed={!inClassScope} onClick={() => update({ scope: '', enrollment: '' })}>All my students</button>
             <button type="button" aria-pressed={inClassScope} onClick={() => update({ scope: 'class', archived: false })} disabled={!activeClass}
               title={activeClass ? undefined : 'Create or select a class first'}>
               {activeClass ? `In ${formatClassLabel(activeClass)}` : 'In working class'}
             </button>
-          </div>
-          <RefreshButton queryKeys={[['students'], ['classes']]} label="Refresh students" />
+          </Segmented>
+          <RefreshButton refresh={refresh} label="Refresh students" />
         </div>
         <div className="d-flex flex-wrap gap-2">
           <button type="button" className="btn btn-light d-inline-flex align-items-center gap-2" onClick={handleExport} disabled={exporting}>
@@ -312,7 +315,7 @@ export default function StudentsPage() {
             </div>
           )}
         </div>
-        {isFetching && !isPending && <Spinner size="sm" label="Updating results" className="text-muted-evsu" />}
+        {isFetching && !isPending && !refresh.busy && <Spinner size="sm" label="Updating results" className="text-muted-evsu" />}
       </div>
 
       {canBulkEnroll && selected.size > 0 && (
@@ -333,7 +336,7 @@ export default function StudentsPage() {
           caption="Students"
           columns={columns}
           rows={rows}
-          loading={isPending}
+          loading={isPending || refresh.busy}
           sort={{ field: state.sort, order: state.order }}
           onSortChange={handleSort}
           selectedIds={selected}

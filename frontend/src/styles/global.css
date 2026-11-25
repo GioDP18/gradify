@@ -382,6 +382,33 @@ a {
   opacity: 0.55;
 }
 
+/* Sliding highlight (see Segmented.jsx): one pill placed under the active option. */
+.evsu-segmented.has-slider {
+  position: relative;
+  isolation: isolate;
+}
+.evsu-segmented.has-slider::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  left: 0;
+  width: var(--seg-w);
+  height: var(--seg-h);
+  border-radius: 9px;
+  background: var(--seg-pill, var(--g-surface));
+  box-shadow: var(--seg-pill-shadow, 0 1px 2px rgba(60, 30, 22, 0.08), 0 2px 8px -2px rgba(60, 30, 22, 0.1));
+  transform: translate(var(--seg-x), var(--seg-y));
+}
+.evsu-segmented.is-sliding::before {
+  transition: transform 260ms var(--g-ease), width 260ms var(--g-ease), height 260ms var(--g-ease);
+}
+.evsu-segmented.has-slider button[aria-pressed='true'],
+.evsu-segmented.has-slider .evsu-segmented__link[aria-current='page'] {
+  background: transparent;
+  box-shadow: none;
+}
+
 /* ───────────────────────── Toasts ───────────────────────── */
 .evsu-toasts {
   position: fixed;
@@ -797,6 +824,77 @@ a {
 }
 @keyframes evsu-spin {
   to { transform: rotate(360deg); }
+}
+
+/* Grade report: shown while one student's grade is recalculated. */
+.evsu-calculating {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2.5rem 1.25rem;
+  text-align: center;
+}
+.evsu-calculating__icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  margin-bottom: 1rem;
+  border-radius: 50%;
+  background: var(--g-maroon-tint);
+  color: var(--g-maroon);
+  animation: evsu-calc-bob 1.1s ease-in-out infinite;
+}
+.evsu-calculating__icon::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--g-gold);
+  animation: evsu-calc-ring 1.4s ease-out infinite;
+}
+.evsu-calculating__dots i {
+  display: inline-block;
+  width: 0.28em;
+  height: 0.28em;
+  margin-left: 0.2em;
+  border-radius: 50%;
+  background: currentColor;
+  animation: evsu-calc-dot 1.1s ease-in-out infinite;
+}
+.evsu-calculating__dots i:nth-child(2) { animation-delay: 0.15s; }
+.evsu-calculating__dots i:nth-child(3) { animation-delay: 0.3s; }
+.evsu-calculating__bar {
+  position: relative;
+  overflow: hidden;
+  width: min(16rem, 100%);
+  height: 6px;
+  border-radius: 999px;
+  background: var(--g-rule);
+}
+.evsu-calculating__bar::after {
+  content: '';
+  position: absolute;
+  inset: 0 60% 0 0;
+  border-radius: inherit;
+  background: var(--g-maroon);
+  animation: evsu-calc-bar 1.2s ease-in-out infinite;
+}
+@keyframes evsu-calc-bob {
+  50% { transform: translateY(-4px); }
+}
+@keyframes evsu-calc-ring {
+  from { transform: scale(1); opacity: 0.9; }
+  to { transform: scale(1.55); opacity: 0; }
+}
+@keyframes evsu-calc-dot {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.35; }
+  30% { transform: translateY(-0.3em); opacity: 1; }
+}
+@keyframes evsu-calc-bar {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(250%); }
 }
 
 /* ───────────────────────── Shared: attendance & score entry ───────────────────────── */

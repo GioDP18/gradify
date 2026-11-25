@@ -42,7 +42,7 @@ describe('validateStudentInput (shared by API and CSV import)', () => {
 
   it('rejects object payloads (type confusion)', () => {
     const { errors } = validateStudentInput({ ...validStudent(), lastName: { $ne: '' } });
-    expect(errors).toEqual([{ field: 'lastName', message: 'Last name has an invalid type' }]);
+    expect(errors).toEqual([{ field: 'lastName', message: 'Last name is not valid' }]);
   });
 
   it('only checks provided fields on partial updates', () => {

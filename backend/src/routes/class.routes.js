@@ -19,7 +19,7 @@ router.put('/:id', validate([idParam(), ...updateClassRules]), controller.update
 router.delete('/:id', validate([idParam()]), controller.archive);
 router.post('/:id/restore', validate([idParam()]), controller.restore);
 // QR self-enrollment: on/off, and a new private link (old QR codes stop working).
-router.put('/:id/self-enrollment', validate([idParam(), body('open').isBoolean({ strict: true }).withMessage('open must be true or false')]), async (req, res) =>
+router.put('/:id/self-enrollment', validate([idParam(), body('open').isBoolean({ strict: true }).withMessage('That choice is not valid.')]), async (req, res) =>
   sendSuccess(res, await classService.setSelfEnrollment(req.user.id, req.params.id, req.body.open, req)),
 );
 router.post('/:id/self-enrollment/link', validate([idParam()]), async (req, res) =>

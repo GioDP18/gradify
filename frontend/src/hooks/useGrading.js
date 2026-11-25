@@ -50,6 +50,15 @@ export function useRecalculateClass() {
   });
 }
 
+/** Recalculates one student's grades in a class (all periods). */
+export function useRecalculateStudent() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ classId, studentId }) => gradingApi.recalculateStudent(classId, studentId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: gradingKeys.all }),
+  });
+}
+
 export function useSaveConfiguration() {
   const queryClient = useQueryClient();
   return useMutation({
