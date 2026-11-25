@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Archive, ArchiveRestore, Download, Pencil, Plus, QrCode, Upload, UserMinus, UserPlus, Users, Eye } from 'lucide-react';
 import RefreshButton from '../../components/common/RefreshButton';
+import useRefresh from '../../hooks/useRefresh';
 import { useClassContext, formatClassLabel } from '../../context/ClassContext';
 import {
   useStudentList, useStudentFacets, useCreateStudent, useUpdateStudent, useArchiveStudent, useRestoreStudent,
@@ -93,6 +94,7 @@ export default function StudentsPage() {
   );
 
   const { data, isPending, isFetching, error, refetch } = useStudentList(query);
+  const refresh = useRefresh([['students'], ['classes']]);
   const facets = useStudentFacets().data;
   const rows = data?.items ?? [];
 
@@ -259,7 +261,7 @@ export default function StudentsPage() {
               {activeClass ? `In ${formatClassLabel(activeClass)}` : 'In working class'}
             </button>
           </div>
-          <RefreshButton queryKeys={[['students'], ['classes']]} label="Refresh students" />
+          <RefreshButton refresh={refresh} label="Refresh students" />
         </div>
         <div className="d-flex flex-wrap gap-2">
           <button type="button" className="btn btn-light d-inline-flex align-items-center gap-2" onClick={handleExport} disabled={exporting}>
@@ -312,7 +314,7 @@ export default function StudentsPage() {
             </div>
           )}
         </div>
-        {isFetching && !isPending && <Spinner size="sm" label="Updating results" className="text-muted-evsu" />}
+        {isFetching && !isPending && !refresh.busy && <Spinner size="sm" label="Updating results" className="text-muted-evsu" />}
       </div>
 
       {canBulkEnroll && selected.size > 0 && (
@@ -333,7 +335,7 @@ export default function StudentsPage() {
           caption="Students"
           columns={columns}
           rows={rows}
-          loading={isPending}
+          loading={isPending || refresh.busy}
           sort={{ field: state.sort, order: state.order }}
           onSortChange={handleSort}
           selectedIds={selected}
