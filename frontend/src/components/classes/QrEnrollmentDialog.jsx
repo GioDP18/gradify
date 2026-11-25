@@ -6,9 +6,10 @@ import Modal from '../common/Modal';
 import ConfirmDialog from '../common/ConfirmDialog';
 import Spinner from '../common/Spinner';
 import { useToast } from '../common/Toast';
-import { useClassContext, formatClassLabel } from '../../context/ClassContext';
+import { useClassContext, formatClassLabel, SEMESTER_LABELS } from '../../context/ClassContext';
 import { classKeys } from '../../hooks/useClasses';
 import * as classesApi from '../../services/classesApi';
+import { buildQrPoster } from '../../utils/qrPoster';
 import './qr.css';
 
 export const joinUrl = (token) => `${window.location.origin}/join/${token}`;
@@ -26,6 +27,8 @@ export default function QrEnrollmentDialog({ classId, open, onClose }) {
   const [busy, setBusy] = useState(null); // 'toggle' | 'link'
   const [confirmNewLink, setConfirmNewLink] = useState(false);
   const [qr, setQr] = useState(null);
+  // The designed image that is downloaded; the plain code is used if it cannot be drawn.
+  const [poster, setPoster] = useState(null);
 
   const token = cls?.selfEnrollment?.token ?? null;
   const accepting = Boolean(cls?.selfEnrollment?.open);
@@ -37,11 +40,24 @@ export default function QrEnrollmentDialog({ classId, open, onClose }) {
       setQr(null);
       return undefined;
     }
-    QRCode.toDataURL(url, { width: 640, margin: 2, errorCorrectionLevel: 'M', color: { dark: '#3a0b11', light: '#ffffff' } })
+    QRCode.toDataURL(url, { width: 960, margin: 2, errorCorrectionLevel: 'M', color: { dark: '#3a0b11', light: '#ffffff' } })
       .then((data) => { if (!cancelled) setQr(data); })
       .catch(() => { if (!cancelled) setQr(null); });
     return () => { cancelled = true; };
   }, [url]);
+
+  const posterKey = cls ? [cls.subjectCode, cls.section, cls.subjectTitle, cls.semester, cls.schoolYear].join('|') : '';
+  useEffect(() => {
+    let cancelled = false;
+    setPoster(null);
+    if (!qr || !open || !cls) return undefined;
+    const term = [SEMESTER_LABELS[cls.semester] ?? cls.semester, cls.schoolYear && `SY ${cls.schoolYear}`].filter(Boolean).join(', ');
+    buildQrPoster({ qrDataUrl: qr, cls, term })
+      .then((data) => { if (!cancelled) setPoster(data); })
+      .catch(() => { if (!cancelled) setPoster(null); });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- posterKey stands for the class fields drawn
+  }, [qr, open, posterKey]);
 
   if (!cls) return null;
   const label = formatClassLabel(cls);
@@ -109,7 +125,7 @@ export default function QrEnrollmentDialog({ classId, open, onClose }) {
                 <button type="button" className="btn btn-light" onClick={copy}><Copy size={14} aria-hidden="true" /> Copy link</button>
               </div>
               <div className="d-flex flex-wrap gap-2 justify-content-between">
-                <a className={`btn btn-light btn-sm ${qr ? '' : 'disabled'}`} href={qr ?? undefined} download={`qr-enroll-${cls.subjectCode}-${cls.section}.png`.replace(/\s+/g, '-')}>
+                <a className={`btn btn-light btn-sm ${qr ? '' : 'disabled'}`} href={poster ?? qr ?? undefined} download={`qr-enroll-${cls.subjectCode}-${cls.section}.png`.replace(/\s+/g, '-')}>
                   <Download size={14} aria-hidden="true" /> Download QR code
                 </a>
                 <button type="button" className="btn btn-light btn-sm" onClick={() => setConfirmNewLink(true)} disabled={busy === 'link'}>
