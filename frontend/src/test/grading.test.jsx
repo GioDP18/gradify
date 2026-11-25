@@ -20,6 +20,7 @@ vi.mock('../services/gradingApi', () => ({
   saveConfiguration: vi.fn(),
   exportClassGrades: vi.fn(),
   exportStudentReport: vi.fn(),
+  getGradeShare: vi.fn().mockResolvedValue({ share: null, student: { fullName: 'Bautista, Ana', email: null }, emailAvailable: false }),
 }));
 
 const components = (a, w, p, e) => [

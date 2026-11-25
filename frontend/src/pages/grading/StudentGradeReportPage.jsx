@@ -1,26 +1,17 @@
 import { useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Calculator, Download, Printer, RefreshCw } from 'lucide-react';
-import { useStudentGrade, useRecalculateStudent } from '../../hooks/useGrading';
+import { ArrowLeft, Calculator, Download, Printer, RefreshCw, Share2 } from 'lucide-react';
+import { useStudentGrade, useRecalculateStudent, useGradeShare } from '../../hooks/useGrading';
 import { exportStudentReport } from '../../services/gradingApi';
 import { useToast } from '../../components/common/Toast';
 import { SEMESTER_LABELS } from '../../context/ClassContext';
 import Spinner from '../../components/common/Spinner';
+import Segmented from '../../components/common/Segmented';
 import { ErrorState, Skeleton } from '../../components/common/States';
-import GradeBreakdown from '../../components/grading/GradeBreakdown';
-import GradeStatusBadge from '../../components/grading/GradeStatusBadge';
-import GradeChip from '../../components/grading/GradeChip';
+import GradeReportBody from '../../components/grading/GradeReportBody';
+import ShareGradeDialog, { isSharing } from '../../components/grading/ShareGradeDialog';
 import PrintHeader from '../../components/grading/PrintHeader';
-import { formatPercentFixed, formatDateOnly } from '../../utils/format';
 import { GRADING_TABS } from './GradingPage';
-
-const STATUS_TEXT = {
-  COMPLETE: 'Complete',
-  INCOMPLETE: 'Incomplete (INC)',
-  NOT_COMPUTABLE: 'Not computable yet',
-  DROPPED: 'Dropped (DRP)',
-  INC_LAPSED: 'INC lapsed — final grade 5.0',
-};
 
 /** Long enough to see the animation even when the server answers at once. */
 const MIN_CALCULATING_MS = 900;
@@ -40,6 +31,116 @@ function CalculatingPanel({ name }) {
   );
 }
 
+/** Midterm / Finals / Final Grade. The highlight slides to the chosen period, as on the class sheet. */
+function PeriodTabs({ period, studentId, classId }) {
+  return (
+    <Segmented label="Report period">
+      {GRADING_TABS.map((tab) => (
+        <Link key={tab.value} to={`/grading/${tab.value}/student/${studentId}?classId=${classId}`} className="evsu-segmented__link" aria-current={tab.value === period ? 'page' : undefined}>
+          {tab.label}
+        </Link>
+      ))}
+    </Segmented>
+  );
+}
+
+/** Placeholder for one table card of the report: the real headings, with bars where the figures go. */
+function TableSkeleton({ title, headers, rows, footRows = 0, badge = false }) {
+  return (
+    <section className="evsu-card p-3 p-md-4 mb-3">
+      <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+        <h3 className="h6 mb-0">{title}</h3>
+        {badge && <Skeleton width="5.5rem" height="1.5rem" />}
+      </div>
+      <div className="evsu-table-wrap">
+        <table className="table evsu-table mb-0">
+          <thead>
+            <tr>{headers.map((h, i) => <th key={h} scope="col" className={i ? 'text-end' : undefined}>{h}</th>)}</tr>
+          </thead>
+          <tbody>
+            {Array.from({ length: rows }, (_, r) => (
+              <tr key={r}>
+                {headers.map((h, i) => (
+                  <td key={h} data-label={h} className={i ? 'text-end' : undefined}>
+                    <Skeleton width={i ? '3.25rem' : `${9 + ((r * 5) % 7)}rem`} height="1.1rem" />
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+          {footRows > 0 && (
+            <tfoot>
+              {Array.from({ length: footRows }, (_, r) => (
+                <tr key={r}>
+                  <td colSpan={headers.length - 1} className="text-end"><Skeleton width="9.5rem" height="1.1rem" /></td>
+                  <td className="text-end"><Skeleton width="3.25rem" height="1.1rem" /></td>
+                </tr>
+              ))}
+            </tfoot>
+          )}
+        </table>
+      </div>
+    </section>
+  );
+}
+
+const BREAKDOWN_HEADERS = ['Component', 'Raw score', 'Maximum', 'Percentage', 'Weight', 'Weighted'];
+
+/**
+ * Shown in place of the figures while a report loads. It has the report's own layout for the
+ * period being opened (the Final Grade has two breakdowns and the final computation), so nothing
+ * jumps when the figures arrive. The page header and period tabs stay in place above it, and so
+ * does the student's card once it is known (`withStudent` false): it is the same for every period.
+ */
+function ReportSkeleton({ period, withStudent = true }) {
+  const periodLabel = GRADING_TABS.find((t) => t.value === period)?.label ?? period;
+  return (
+    <div aria-busy="true">
+      <span className="visually-hidden" role="status">Loading the grade report…</span>
+      {withStudent && (
+        <section className="evsu-card p-3 p-md-4 mb-3">
+          <div className="d-flex flex-wrap justify-content-between gap-3">
+            <div>
+              <Skeleton width="6rem" height="0.9rem" className="d-block mb-2" />
+              <Skeleton width="14rem" height="1.7rem" className="d-block mb-2" />
+              <Skeleton width="11rem" height="1rem" className="d-block" />
+            </div>
+            <div className="d-flex flex-column align-items-md-end">
+              <p className="small text-muted-evsu mb-1">Class</p>
+              <Skeleton width="8rem" height="1.1rem" className="mb-1" />
+              <Skeleton width="11rem" height="0.9rem" className="mb-1" />
+              <Skeleton width="10rem" height="0.9rem" />
+            </div>
+          </div>
+        </section>
+      )}
+
+      {period === 'overall' ? (
+        <>
+          <TableSkeleton title="Midterm grade" headers={BREAKDOWN_HEADERS} rows={4} footRows={2} badge />
+          <TableSkeleton title="Finals grade" headers={BREAKDOWN_HEADERS} rows={4} footRows={2} badge />
+          <TableSkeleton title="Final grade computation" headers={['Period', 'Percentage', 'Weight', 'Weighted']} rows={2} />
+        </>
+      ) : (
+        <TableSkeleton title={`${periodLabel} grade`} headers={BREAKDOWN_HEADERS} rows={4} footRows={2} badge />
+      )}
+
+      <section className="evsu-card p-3 p-md-4">
+        <h3 className="h6 mb-3">{period === 'overall' ? 'Final result' : `${periodLabel} result`}</h3>
+        <dl className="evsu-details mb-0">
+          {['Computed percentage', 'Rounded percentage', 'Grade equivalent', 'Remarks', 'Completion status'].map((label) => (
+            <div key={label}>
+              <dt>{label}</dt>
+              <dd><Skeleton width={label === 'Grade equivalent' ? '5rem' : '4.5rem'} height={label === 'Grade equivalent' ? '3.4rem' : '1.4rem'} className="mt-1" /></dd>
+            </div>
+          ))}
+        </dl>
+        <Skeleton height="0.9rem" className="mt-3" />
+      </section>
+    </div>
+  );
+}
+
 /** Individual grade report: exactly how the engine computed this student's grade. */
 export default function StudentGradeReportPage() {
   const { period, studentId } = useParams();
@@ -47,21 +148,17 @@ export default function StudentGradeReportPage() {
   const classId = params.get('classId');
   const toast = useToast();
   const [exporting, setExporting] = useState(null);
-  const { data, isPending, error, refetch } = useStudentGrade(period, classId, studentId);
+  const { data, isPending, isPlaceholderData, error, refetch } = useStudentGrade(period, classId, studentId);
   const recalc = useRecalculateStudent();
   const [calculating, setCalculating] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  // Only to mark the button while the student can view the sheet; the dialog shows the details.
+  const shareState = useGradeShare(classId, studentId, { enabled: Boolean(data) });
+  const shared = isSharing(shareState.data?.share);
 
   const backLink = `/grading${period === 'midterm' ? '' : `?period=${period}`}`;
 
   if (!classId) return <div className="evsu-card"><ErrorState title="No class selected" error={{ message: 'Open this report from the grading sheet.' }} /></div>;
-  if (isPending) {
-    return (
-      <div className="evsu-card p-4" aria-busy="true">
-        <Skeleton width="40%" height="1.5rem" />
-        {Array.from({ length: 5 }, (_, i) => <Skeleton key={i} className="mt-3" height="2rem" />)}
-      </div>
-    );
-  }
   if (error) {
     return (
       <div className="evsu-card">
@@ -71,8 +168,13 @@ export default function StudentGradeReportPage() {
     );
   }
 
-  const { grade: g, configuration: config, class: cls } = data;
-  const s = g.student;
+  // While a period loads, the header and tabs stay as they are and only the figures are placeholders.
+  const loading = isPending || isPlaceholderData;
+  // The student and class are the same for every period, so they stay on screen while another
+  // period loads. (`data` may still be the previous period's report, never another student's.)
+  const known = data && data.grade.student.id === studentId && data.class.id === classId ? data : null;
+  const { grade: g, configuration: config, class: cls } = known ?? {};
+  const s = g?.student;
   const periodLabel = GRADING_TABS.find((t) => t.value === period)?.label ?? period;
 
   const handleRecalculate = async () => {
@@ -101,125 +203,63 @@ export default function StudentGradeReportPage() {
 
   return (
     <>
-      <PrintHeader
-        title={`Individual Grade Report — ${periodLabel}`}
-        lines={[`${cls.subjectCode} · ${cls.subjectTitle} · ${cls.section}`, `${SEMESTER_LABELS[cls.semester]}, SY ${cls.schoolYear}`]}
-      />
+      {known && !loading && (
+        <PrintHeader
+          title={`Individual Grade Report — ${periodLabel}`}
+          lines={[`${cls.subjectCode} · ${cls.subjectTitle} · ${cls.section}`, `${SEMESTER_LABELS[cls.semester]}, SY ${cls.schoolYear}`]}
+        />
+      )}
 
       <div className="evsu-page-header no-print">
         <Link to={backLink} className="d-inline-flex align-items-center gap-1 small text-decoration-none">
           <ArrowLeft size={14} aria-hidden="true" /> Class grading sheet
         </Link>
         <div className="d-flex flex-wrap gap-2">
-          <button type="button" className="btn btn-light d-inline-flex align-items-center gap-2" onClick={handleRecalculate} disabled={calculating}>
+          <button type="button" className="btn btn-light d-inline-flex align-items-center gap-2" onClick={handleRecalculate} disabled={calculating || loading}>
             <RefreshCw size={16} aria-hidden="true" className={calculating ? 'spin' : undefined} /> Recalculate
           </button>
-          <button type="button" className="btn btn-light d-inline-flex align-items-center gap-2" onClick={() => handleExport('csv')} disabled={Boolean(exporting)}>
+          <button type="button" className="btn btn-light d-inline-flex align-items-center gap-2" onClick={() => handleExport('csv')} disabled={Boolean(exporting) || loading}>
             {exporting === 'csv' ? <Spinner size="sm" label="" /> : <Download size={16} aria-hidden="true" />} CSV
           </button>
-          <button type="button" className="btn btn-light d-inline-flex align-items-center gap-2" onClick={() => handleExport('xlsx')} disabled={Boolean(exporting)}>
+          <button type="button" className="btn btn-light d-inline-flex align-items-center gap-2" onClick={() => handleExport('xlsx')} disabled={Boolean(exporting) || loading}>
             {exporting === 'xlsx' ? <Spinner size="sm" label="" /> : <Download size={16} aria-hidden="true" />} Excel
           </button>
-          <button type="button" className="btn btn-primary d-inline-flex align-items-center gap-2" onClick={() => window.print()}>
+          <button type="button" className="btn btn-primary d-inline-flex align-items-center gap-2" onClick={() => window.print()} disabled={loading}>
             <Printer size={16} aria-hidden="true" /> Print report
           </button>
         </div>
       </div>
 
-      <nav className="evsu-segmented mb-3 no-print" aria-label="Report period">
-        {GRADING_TABS.map((tab) => (
-          <Link key={tab.value} to={`/grading/${tab.value}/student/${studentId}?classId=${classId}`} className="evsu-segmented__link" aria-current={tab.value === period ? 'page' : undefined}>
-            {tab.label}
-          </Link>
-        ))}
-      </nav>
-
-      <section className="evsu-card p-3 p-md-4 mb-3 evsu-avoid-break" aria-labelledby="report-student">
-        <div className="d-flex flex-wrap justify-content-between gap-3">
-          <div>
-            <p className="small text-muted-evsu mb-1">{s.studentNumber}</p>
-            <h2 id="report-student" className="h4 mb-1">{s.fullName}</h2>
-            <p className="mb-0 text-muted-evsu">{s.course} · Year {s.yearLevel} · Section {s.section}</p>
-          </div>
-          <div className="text-md-end">
-            <p className="small text-muted-evsu mb-1">Class</p>
-            <p className="fw-semibold mb-0">{cls.subjectCode} · {cls.section}</p>
-            <p className="small mb-0">{cls.subjectTitle}</p>
-            <p className="small text-muted-evsu mb-0">{SEMESTER_LABELS[cls.semester]}, SY {cls.schoolYear}</p>
-          </div>
-        </div>
-      </section>
-
-      {calculating ? (
-        <CalculatingPanel name={s.fullName} />
-      ) : (
-      <>
-      {period === 'overall' ? (
+      <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3 no-print">
+        <PeriodTabs period={period} studentId={studentId} classId={classId} />
+        <button type="button" className="btn btn-light d-inline-flex align-items-center gap-2" onClick={() => setSharing(true)} disabled={!known}>
+          {shared ? <span className="evsu-share-dot" aria-hidden="true" /> : <Share2 size={16} aria-hidden="true" />}
+          {shared ? 'Shared with student' : 'Share with student'}
+        </button>
+      </div>
+      {!known ? <ReportSkeleton period={period} /> : (
         <>
-          {['MIDTERM', 'FINALS'].map((p) => (
-            <GradeBreakdown key={p} result={g.periods?.[p]} title={`${p === 'MIDTERM' ? 'Midterm' : 'Finals'} grade (${config.periodWeights[p]}% of the final grade)`} />
-          ))}
-          <section className="evsu-card p-3 p-md-4 mb-3 evsu-avoid-break" aria-label="Final grade computation">
-            <h3 className="h6 mb-3">Final grade computation</h3>
-            <div className="evsu-table-wrap">
-              <table className="table evsu-table mb-0">
-                <caption className="visually-hidden">Final grade computation</caption>
-                <thead>
-                  <tr><th scope="col">Period</th><th scope="col" className="text-end">Percentage</th><th scope="col" className="text-end">Weight</th><th scope="col" className="text-end">Weighted</th></tr>
-                </thead>
-                <tbody>
-                  {['MIDTERM', 'FINALS'].map((p) => {
-                    const pr = g.current ? g.periodResults?.[p] : null;
-                    return (
-                      <tr key={p}>
-                        <th scope="row" data-label="Period">{p === 'MIDTERM' ? 'Midterm' : 'Finals'}</th>
-                        <td data-label="Percentage" className="text-end">{formatPercentFixed(pr?.percentage)}</td>
-                        <td data-label="Weight" className="text-end">{config.periodWeights[p]}%</td>
-                        <td data-label="Weighted" className="text-end fw-semibold">{pr?.weightedContribution != null ? Number(pr.weightedContribution.toFixed(2)) : '—'}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+          <ShareGradeDialog open={sharing} onClose={() => setSharing(false)} classId={classId} studentId={studentId} studentName={s.fullName} />
+
+          <section className="evsu-card p-3 p-md-4 mb-3 evsu-avoid-break" aria-labelledby="report-student">
+            <div className="d-flex flex-wrap justify-content-between gap-3">
+              <div>
+                <p className="small text-muted-evsu mb-1">{s.studentNumber}</p>
+                <h2 id="report-student" className="h4 mb-1">{s.fullName}</h2>
+                <p className="mb-0 text-muted-evsu">{s.course} · Year {s.yearLevel} · Section {s.section}</p>
+              </div>
+              <div className="text-md-end">
+                <p className="small text-muted-evsu mb-1">Class</p>
+                <p className="fw-semibold mb-0">{cls.subjectCode} · {cls.section}</p>
+                <p className="small mb-0">{cls.subjectTitle}</p>
+                <p className="small text-muted-evsu mb-0">{SEMESTER_LABELS[cls.semester]}, SY {cls.schoolYear}</p>
+              </div>
             </div>
           </section>
-        </>
-      ) : (
-        <GradeBreakdown result={g} title={`${periodLabel} grade`} />
-      )}
 
-      <section className="evsu-card p-3 p-md-4 evsu-avoid-break" aria-labelledby="final-result">
-        <h3 id="final-result" className="h6 mb-3">{period === 'overall' ? 'Final result' : `${periodLabel} result`}</h3>
-        {!g.current ? (
-          <p className="mb-0"><GradeStatusBadge result={g} /> <span className="ms-2">This grade is being recalculated and will appear once it is current.</span></p>
-        ) : (
-          <dl className="evsu-details mb-0">
-            <div><dt>Computed percentage</dt><dd className="h5 mb-0">{formatPercentFixed(g.percentage)}</dd></div>
-            <div><dt>Rounded percentage</dt><dd>{g.roundedPercent === null ? '—' : `${g.roundedPercent}%`}</dd></div>
-            <div><dt>Grade equivalent</dt><dd className="mb-0 mt-1"><GradeChip size="lg" grade={g.grade} /></dd></div>
-            <div><dt>Remarks</dt><dd><GradeStatusBadge result={g} passingGrade={config.passingGrade} /></dd></div>
-            <div><dt>Completion status</dt><dd>{STATUS_TEXT[g.completionStatus] ?? g.completionStatus}</dd></div>
-            {g.incDeadline && ['INCOMPLETE', 'INC_LAPSED'].includes(g.completionStatus) && (
-              <div><dt>INC completion deadline</dt><dd>{formatDateOnly(g.incDeadline.slice(0, 10))}</dd></div>
-            )}
-          </dl>
-        )}
-        {g.current && g.missingItems?.length > 0 && g.completionStatus !== 'DROPPED' && (
-          <div className="mt-3">
-            <p className="fw-semibold small mb-1">Lacking requirements</p>
-            <ul className="small mb-0">
-              {g.missingItems.map((m) => (
-                <li key={`${m.period ?? ''}-${m.id}`}>{m.period ? `${m.period === 'MIDTERM' ? 'Midterm' : 'Finals'} — ` : ''}{m.title} ({m.componentLabel ?? m.component})</li>
-              ))}
-            </ul>
-          </div>
-        )}
-        <p className="small text-muted-evsu mt-3 mb-0">
-          Computed by the EVSU grading engine using criteria version {config.version}
-          {g.lastCalculatedAt ? ` on ${new Date(g.lastCalculatedAt).toLocaleString('en-PH')}` : ''}. The percentage is rounded half-up to a whole number before conversion to the 1.0–5.0 scale.
-        </p>
-      </section>
-      </>
+          {loading && <ReportSkeleton period={period} withStudent={false} />}
+          {!loading && (calculating ? <CalculatingPanel name={s.fullName} /> : <GradeReportBody grade={g} config={config} period={period} />)}
+        </>
       )}
     </>
   );

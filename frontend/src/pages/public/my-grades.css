@@ -1,0 +1,107 @@
+/*
+ * A student's own grading sheet, opened from a private link (no sign-in). Most students open it
+ * on a phone: a maroon band with the logo on top, then the same cards the instructor sees.
+ */
+.evsu-mygrades {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background:
+    radial-gradient(40% 30% at 8% 62%, rgba(240, 183, 56, 0.1), transparent 70%),
+    linear-gradient(180deg, #fbf8f4 0%, #f7f0e8 100%);
+}
+.evsu-mygrades__band {
+  padding: 1.5rem 1rem 4.25rem;
+  background:
+    radial-gradient(45% 80% at 10% 0%, rgba(255, 206, 128, 0.28), transparent 70%),
+    linear-gradient(135deg, #8a1218 0%, #6a0911 100%);
+  border-bottom: 4px solid var(--g-gold);
+  color: #ffffff;
+}
+.evsu-mygrades__brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  max-width: 880px;
+  margin: 0 auto;
+}
+.evsu-mygrades__logo {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px var(--g-gold);
+}
+.evsu-mygrades__logo img {
+  width: 48px;
+  height: auto;
+}
+.evsu-mygrades__eyebrow {
+  margin: 0 0 0.2rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #f6d488;
+}
+.evsu-mygrades__title {
+  margin: 0;
+  font-size: clamp(1.4rem, 5vw, 1.9rem);
+  color: #ffffff;
+}
+/* The first card overlaps the band. */
+.evsu-mygrades__main {
+  max-width: 912px;
+  margin: -3rem auto 0;
+  padding: 0 1rem 2.5rem;
+}
+.evsu-mygrades__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.85rem;
+  color: var(--g-ink-soft);
+}
+.evsu-mygrades__meta li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+@media (min-width: 768px) {
+  .evsu-mygrades__meta li {
+    justify-content: flex-end;
+  }
+}
+.evsu-mygrades__notice {
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+}
+.evsu-mygrades__notice-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  margin-bottom: 1rem;
+  border-radius: 50%;
+  background: rgba(138, 18, 24, 0.08);
+  color: var(--g-maroon);
+}
+.evsu-mygrades__foot {
+  margin: 1.25rem 0 0;
+  font-size: 0.85rem;
+  color: var(--g-ink-soft);
+  text-align: center;
+}
+@media print {
+  .evsu-mygrades__band {
+    padding-bottom: 1.5rem;
+  }
+  .evsu-mygrades__main {
+    margin-top: 1rem;
+  }
+}

@@ -35,6 +35,7 @@ const SettingsPage = lazyPage(() => import('../pages/settings/SettingsPage'));
 const UsersPage = lazyPage(() => import('../pages/admin/UsersPage'));
 const ProfilePage = lazyPage(() => import('../pages/profile/ProfilePage'));
 const JoinClassPage = lazyPage(() => import('../pages/public/JoinClassPage'));
+const MyGradesPage = lazyPage(() => import('../pages/public/MyGradesPage'));
 const SystemStatusPage = lazyPage(() => import('../pages/system/SystemStatusPage'));
 
 /**
@@ -64,6 +65,16 @@ export const routes = [
     element: (
       <Suspense fallback={<SplashScreen />}>
         <JoinClassPage />
+      </Suspense>
+    ),
+    errorElement: <RouteErrorPage />,
+  },
+  // Public (no sign-in): a student's own grading sheet, from the private link their instructor shared.
+  {
+    path: '/my-grades/:token',
+    element: (
+      <Suspense fallback={<SplashScreen />}>
+        <MyGradesPage />
       </Suspense>
     ),
     errorElement: <RouteErrorPage />,

@@ -1,6 +1,5 @@
 import { Link, NavLink } from 'react-router-dom';
-import { LogOut, X } from 'lucide-react';
-import ActionButton from '../common/ActionButton';
+import { X } from 'lucide-react';
 import { navGroupsFor } from './navigation';
 import { useAuth } from '../../context/AuthContext';
 import emblem from '../../assets/brand/gradify-emblem.webp';
@@ -19,7 +18,7 @@ export function BrandLockup() {
   );
 }
 
-export default function Sidebar({ id, open, onClose, onLogout }) {
+export default function Sidebar({ id, open, onClose }) {
   const { user } = useAuth();
   return (
     <aside id={id} className={`evsu-sidebar ${open ? 'is-open' : ''}`} aria-label="Main navigation">
@@ -58,11 +57,11 @@ export default function Sidebar({ id, open, onClose, onLogout }) {
         ))}
       </nav>
 
-      <div className="evsu-sidebar__footer">
-        <ActionButton className="evsu-nav-link w-100 border-0 bg-transparent" onClick={onLogout} icon={LogOut} iconSize={18} spinnerClassName="">
-          <span>Logout</span>
-        </ActionButton>
-      </div>
+      {/* Signing out is in the account menu at the top right. */}
+      <footer className="evsu-sidebar__footer">
+        <p className="evsu-sidebar__foot-name">Eastern Visayas State University</p>
+        <p className="evsu-sidebar__foot-note">&copy; {new Date().getFullYear()} Gradify &middot; EVSU Grading System</p>
+      </footer>
     </aside>
   );
 }
