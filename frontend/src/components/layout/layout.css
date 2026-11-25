@@ -24,7 +24,7 @@
   display: flex;
   flex-direction: column;
   background:
-    radial-gradient(120% 60% at 0% 0%, rgba(232, 161, 26, 0.1), transparent 60%),
+    radial-gradient(120% 60% at 0% 0%, rgba(240, 183, 56, 0.1), transparent 60%),
     linear-gradient(180deg, var(--g-oxblood-2) 0%, var(--g-oxblood) 55%);
   color: rgba(255, 255, 255, 0.78);
   z-index: 1040;
@@ -62,9 +62,9 @@
 .evsu-sidebar__name {
   display: block;
   font-family: var(--g-font-display);
-  font-size: 1.45rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   line-height: 1;
   color: #fff;
 }
@@ -144,7 +144,7 @@
   height: 0.45rem;
   border-radius: 50%;
   background: var(--g-gold);
-  box-shadow: 0 0 0 3px rgba(232, 161, 26, 0.22);
+  box-shadow: 0 0 0 3px rgba(240, 183, 56, 0.22);
 }
 .evsu-nav-link.is-disabled {
   color: rgba(255, 255, 255, 0.35);
@@ -181,7 +181,7 @@
   gap: 1rem;
   min-height: var(--evsu-topbar-height);
   padding: 0.75rem 2.25rem;
-  background: rgba(244, 242, 246, 0.82);
+  background: rgba(251, 248, 244, 0.82);
   backdrop-filter: saturate(1.4) blur(14px);
   border-bottom: 1px solid transparent;
   transition: border-color var(--g-transition), background-color var(--g-transition);
@@ -196,8 +196,8 @@
 }
 .evsu-topbar__title h1 {
   font-size: 1.6rem;
-  font-weight: 750;
-  letter-spacing: -0.035em;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 .evsu-topbar__actions {
   display: flex;
@@ -253,7 +253,7 @@
   transition: box-shadow var(--g-transition);
 }
 .evsu-account-btn:hover {
-  box-shadow: 0 2px 4px rgba(58, 11, 17, 0.05), 0 10px 22px -12px rgba(58, 11, 17, 0.3);
+  box-shadow: 0 2px 4px rgba(70, 35, 25, 0.05), 0 10px 22px -12px rgba(70, 35, 25, 0.3);
 }
 .evsu-avatar {
   display: inline-grid;
@@ -263,10 +263,10 @@
   border-radius: 50%;
   background: linear-gradient(140deg, var(--g-maroon), var(--g-oxblood));
   color: #fff;
-  font-family: var(--g-font-display);
+  font-family: var(--g-font);
   font-weight: 700;
   font-size: 0.8125rem;
-  box-shadow: inset 0 0 0 2px rgba(232, 161, 26, 0.55);
+  box-shadow: inset 0 0 0 2px rgba(240, 183, 56, 0.55);
 }
 .evsu-menu {
   position: absolute;
@@ -330,7 +330,7 @@
   .evsu-drawer-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(58, 11, 17, 0.45);
+    background: rgba(70, 35, 25, 0.45);
     backdrop-filter: blur(2px);
     z-index: 1030;
   }
@@ -422,7 +422,7 @@
   padding: 0.55rem 0.6rem 0.55rem 1rem;
   border-radius: var(--g-radius-tile);
   background: var(--g-surface);
-  border: 1px solid rgba(58, 11, 17, 0.06);
+  border: 1px solid rgba(70, 35, 25, 0.06);
   box-shadow: inset 3px 0 0 var(--g-gold);
   font-size: 0.875rem;
 }
@@ -452,4 +452,9 @@
   min-width: 15rem;
   max-width: 100%;
   font-weight: 600;
+}
+
+/* A gold ribbon down the rail's edge, as on the sign-in page. */
+.evsu-sidebar {
+  box-shadow: inset -3px 0 0 var(--g-gold);
 }

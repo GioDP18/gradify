@@ -6,10 +6,10 @@
   border-radius: 24px;
   color: #fff;
   background:
-    radial-gradient(90% 140% at 100% 0%, rgba(232, 161, 26, 0.24), transparent 55%),
-    radial-gradient(60% 90% at 0% 100%, rgba(138, 28, 34, 0.9), transparent 70%),
+    radial-gradient(90% 140% at 100% 0%, rgba(240, 183, 56, 0.24), transparent 55%),
+    radial-gradient(60% 90% at 0% 100%, rgba(138, 18, 24, 0.9), transparent 70%),
     linear-gradient(135deg, var(--g-oxblood-2), var(--g-oxblood));
-  box-shadow: 0 24px 48px -28px rgba(58, 11, 17, 0.7);
+  box-shadow: 0 24px 48px -28px rgba(70, 35, 25, 0.7);
 }
 .evsu-hero :focus-visible {
   outline-color: var(--g-gold);
@@ -37,9 +37,9 @@
   gap: 0.35rem 0.85rem;
   margin: 0 0 0.4rem;
   font-size: clamp(2.2rem, 4.5vw, 3.4rem);
-  font-weight: 800;
-  letter-spacing: -0.045em;
-  line-height: 1;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
   color: #fff;
 }
 .evsu-hero__section {
@@ -103,7 +103,7 @@
   font-family: var(--g-font-display);
   font-size: clamp(2.6rem, 5vw, 3.6rem);
   font-weight: 700;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.02em;
   line-height: 1;
 }
 .evsu-hero__caption {
@@ -216,7 +216,7 @@
   gap: 0.75rem;
   padding: 0.9rem 1rem;
   background: var(--g-surface);
-  border: 1px solid rgba(58, 11, 17, 0.05);
+  border: 1px solid rgba(70, 35, 25, 0.05);
   border-radius: var(--g-radius-tile);
   box-shadow: var(--g-shadow-panel);
   color: var(--g-ink);
@@ -226,8 +226,8 @@
 .evsu-quick__item:hover {
   color: var(--g-ink);
   transform: translateY(-2px);
-  border-color: rgba(138, 28, 34, 0.18);
-  box-shadow: 0 2px 4px rgba(58, 11, 17, 0.05), 0 14px 28px -14px rgba(58, 11, 17, 0.25);
+  border-color: rgba(138, 18, 24, 0.18);
+  box-shadow: 0 2px 4px rgba(70, 35, 25, 0.05), 0 14px 28px -14px rgba(70, 35, 25, 0.25);
 }
 .evsu-quick__icon {
   display: grid;
