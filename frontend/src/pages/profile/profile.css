@@ -16,7 +16,10 @@
   background:
     radial-gradient(80% 140% at 100% 0%, rgba(240, 183, 56, 0.22), transparent 60%),
     linear-gradient(135deg, var(--g-oxblood-2), var(--g-oxblood));
-  box-shadow: 0 20px 40px -26px rgba(70, 35, 25, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    inset 0 -3px 0 var(--g-gold),
+    0 20px 40px -26px rgba(70, 35, 25, 0.7);
 }
 .evsu-avatar.evsu-profile__avatar {
   display: grid;

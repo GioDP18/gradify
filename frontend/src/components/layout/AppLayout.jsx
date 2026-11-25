@@ -8,6 +8,7 @@ import { ClassProvider } from '../../context/ClassContext';
 import { useToast } from '../common/Toast';
 import { FullPageSpinner } from '../common/Spinner';
 import './layout.css';
+import '../../styles/app-chrome.css';
 
 const SIDEBAR_ID = 'evsu-sidebar';
 
