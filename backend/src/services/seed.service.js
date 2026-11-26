@@ -11,6 +11,7 @@ import { logger } from '../config/logger.js';
 import { User, ROLES } from '../models/User.js';
 import '../models/RefreshToken.js';
 import '../models/PasswordReset.js';
+import '../models/AssistantChat.js';
 import '../models/AuditLog.js';
 import '../models/Class.js';
 import '../models/Student.js';

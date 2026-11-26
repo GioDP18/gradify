@@ -1,15 +1,17 @@
 /**
- * What the in-app assistant knows about Gradify. This text is sent to the AI model with every
- * question, so it is kept short (the model's free allowance is counted in words sent). Update it
- * when a feature it describes changes.
+ * What the in-app assistant knows about Gradify, in topics. Only the short "about" and
+ * "navigation" topics go with every question; the assistant reads the others when a question
+ * needs them (the AI service's allowance is counted in words sent, so nothing is sent unasked).
+ * Update a topic when the feature it describes changes. Topics are separated by a blank line and
+ * start with their heading; GUIDE_TOPICS below names them in the same order.
  */
 export const GRADIFY_KNOWLEDGE = `
 ABOUT
 Gradify (EVSU Grading System) is the website instructors of Eastern Visayas State University use to keep class records: classes, students, attendance, written quizzes, performance activities, examinations, and the grades computed from them. Instructors see only their own classes. The administrator manages instructor accounts and the shared grading criteria and has no classes. Students have no accounts; they only use private links from their instructor (QR enrollment, and a link to their own grading sheet).
 
 NAVIGATION (left sidebar)
-Instructor: Dashboard; Classes, Students, Attendance; Written Quizzes, Performance Activities, Examinations; Grading; Settings; Assistant.
-Administrator: Instructor accounts, Grading criteria, My profile, Assistant.
+Instructor: Dashboard; Classes, Students, Attendance; Written Quizzes, Performance Activities, Examinations; Grading; Chat (this assistant); Settings.
+Administrator: Instructor accounts, Grading criteria, My profile, Chat (this assistant).
 Sign out: click your name at the top right, then Log out.
 
 CLASSES
@@ -66,3 +68,28 @@ Instructor accounts: add an instructor (name, email, optional username, temporar
 PRIVACY
 Important changes are recorded in an audit log. Nobody can see a password, including the administrator. Gradify never asks for a password by email or chat.
 `.trim();
+
+/** Topic names, in the order the topics appear above, each with what it covers. */
+const TOPIC_KEYS = [
+  ['about', 'what Gradify is and who uses it'],
+  ['navigation', 'the sidebar pages and signing out'],
+  ['classes', 'creating, archiving and the working class setting'],
+  ['students', 'adding, importing, QR enrollment, dropping'],
+  ['attendance', 'taking attendance'],
+  ['scores', 'quizzes, activities, examinations; Draft and Published; missing scores'],
+  ['grade_computation', 'weights, formulas, rounding, the 1.0-5.0 scale, remarks, INC, DRP'],
+  ['grading_page', 'the Grading page, grade reports, export and print'],
+  ['sharing_grades', 'sharing a grading sheet with students'],
+  ['account_password', 'profile, password rules, forgot password, sign-in problems'],
+  ['administrator', 'instructor accounts'],
+  ['privacy', 'audit log and passwords'],
+];
+const blocks = GRADIFY_KNOWLEDGE.split(/\n\n+/);
+if (blocks.length !== TOPIC_KEYS.length) throw new Error('assistant knowledge: the topics and TOPIC_KEYS are out of step');
+
+/** topic name → its text (heading included). */
+export const GUIDE = Object.freeze(Object.fromEntries(TOPIC_KEYS.map(([key], i) => [key, blocks[i]])));
+/** The topics the assistant can read on request: name → what it covers. */
+export const GUIDE_TOPICS = Object.freeze(Object.fromEntries(TOPIC_KEYS.filter(([key]) => !['about', 'navigation'].includes(key))));
+/** Sent with every question. */
+export const GUIDE_BASICS = `${GUIDE.about}\n\n${GUIDE.navigation}`;

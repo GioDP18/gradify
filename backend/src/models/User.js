@@ -44,6 +44,8 @@ const userSchema = new mongoose.Schema(
     preferences: {
       // true: one "working class" is shared by every class page; false: each page picks its own class.
       workingClass: { type: Boolean, default: true },
+      // true: the assistant's chats are saved to the account (the same on every device); false: never saved.
+      chatHistory: { type: Boolean, default: true },
     },
   },
   {
@@ -77,7 +79,7 @@ userSchema.methods.toPublic = function toPublic() {
     lastLoginAt: this.lastLoginAt ?? null,
     // Changes whenever the photo changes, so clients can cache it by this value; null = no photo.
     avatarUpdatedAt: this.avatarUpdatedAt ?? null,
-    preferences: { workingClass: this.preferences?.workingClass ?? true },
+    preferences: { workingClass: this.preferences?.workingClass ?? true, chatHistory: this.preferences?.chatHistory ?? true },
   };
 };
 

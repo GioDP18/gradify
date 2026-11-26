@@ -1,9 +1,10 @@
 import { useId, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, School, SlidersHorizontal, UserCog, UserRound } from 'lucide-react';
+import { Bot, ChevronRight, School, SlidersHorizontal, UserCog, UserRound } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/common/Toast';
 import * as authApi from '../../services/authApi';
+import { useQueryClient } from '@tanstack/react-query';
 import './settings.css';
 
 /** On/off switch that saves at once. */
@@ -52,22 +53,35 @@ function sectionsFor(role) {
 export default function SettingsPage() {
   const { user, updateUser } = useAuth();
   const toast = useToast();
+  const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
   const workingClass = user?.preferences?.workingClass ?? true;
 
-  const setWorkingClass = async (on) => {
+  const chatHistory = user?.preferences?.chatHistory ?? true;
+
+  /** Saves one on/off setting at once; the switch moves immediately and goes back if saving fails. */
+  const setPreference = async (name, on, saved) => {
     setSaving(true);
     const previous = user;
-    updateUser({ ...user, preferences: { ...user.preferences, workingClass: on } }); // switch moves at once
+    updateUser({ ...user, preferences: { ...user.preferences, [name]: on } });
     try {
-      updateUser(await authApi.updatePreferences({ workingClass: on }));
-      toast.success(on ? 'Working class turned on.' : 'Working class turned off. Each page now has its own class selector.');
+      updateUser(await authApi.updatePreferences({ [name]: on }));
+      toast.success(saved);
+      return true;
     } catch (error) {
       updateUser(previous);
       toast.error(error.message);
+      return false;
     } finally {
       setSaving(false);
     }
+  };
+
+  const setWorkingClass = (on) => setPreference('workingClass', on, on ? 'Working class turned on.' : 'Working class turned off. Each page now has its own class selector.');
+
+  const setChatHistory = async (on) => {
+    const done = await setPreference('chatHistory', on, on ? 'Chat history turned on.' : 'Chat history turned off. Your saved chats were deleted.');
+    if (done) queryClient.removeQueries({ queryKey: ['assistant-chats'] }); // the server deleted them; forget the list here too
   };
 
   const isAdmin = user?.role === 'ADMIN';
@@ -96,6 +110,27 @@ export default function SettingsPage() {
         />
       </section>
       )}
+
+      <section className="evsu-card p-4 p-md-5" aria-labelledby="settings-assistant">
+        <div className="evsu-settings__head">
+          <span className="evsu-setting__icon" aria-hidden="true"><Bot size={18} /></span>
+          <div>
+            <h2 id="settings-assistant" className="h5 mb-1">Assistant</h2>
+            <p className="small text-muted-evsu mb-0">What the Chat page remembers.</p>
+          </div>
+        </div>
+        <SettingSwitch
+          label="Keep chat history"
+          checked={chatHistory}
+          disabled={saving}
+          onChange={setChatHistory}
+          description={chatHistory ? (
+            <>On: your chats with the assistant are saved to your account, so the history is there on any device or browser you sign in on. You can delete a chat from the Chat page.</>
+          ) : (
+            <>Off: nothing is saved. A conversation is gone as soon as you leave the Chat page. Turning this off also deletes the chats already saved to your account.</>
+          )}
+        />
+      </section>
 
       <section className="evsu-card p-4 p-md-5" aria-labelledby="settings-more">
         <h2 id="settings-more" className="h5 mb-3">{isAdmin ? 'Settings' : 'More settings'}</h2>

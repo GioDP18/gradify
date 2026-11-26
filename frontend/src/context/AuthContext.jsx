@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { useQueryClient } from '@tanstack/react-query';
 import * as authApi from '../services/authApi';
 import { tokenStore } from '../services/tokenStore';
+import { clearChatHistory } from '../utils/chatHistory';
 
 const AuthContext = createContext(null);
 
@@ -55,6 +56,7 @@ export function AuthProvider({ children }) {
     // If the server cannot be reached this throws and the user stays signed in: the session
     // cookie can only be ended by the server, so pretending to be logged out would be unsafe.
     await authApi.logout();
+    clearChatHistory(); // the assistant's saved conversations do not outlive the session
     queryClient.clear();
     setSessionExpired(false);
     setUser(null);
