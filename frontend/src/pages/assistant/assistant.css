@@ -12,13 +12,9 @@
 .evsu-assistant__panel {
   display: flex;
   flex-direction: column;
-  height: clamp(460px, calc(100vh - 10.5rem), 1100px);
-  height: clamp(460px, calc(100dvh - 10.5rem), 1100px);
-  overflow: hidden;
-  border: 1px solid rgba(70, 35, 25, 0.08);
-  border-radius: var(--g-radius-panel, 20px);
-  background: var(--g-surface);
-  box-shadow: 0 1px 2px rgba(70, 35, 25, 0.04), 0 24px 48px -36px rgba(70, 35, 25, 0.5);
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
 }
 
 /* ── Top row: a quiet title, not a toolbar ── */
@@ -525,11 +521,6 @@
 }
 
 @media (max-width: 767.98px) {
-  .evsu-assistant__panel {
-    height: calc(100vh - 8.25rem);
-    height: calc(100dvh - 8.25rem);
-    min-height: 400px;
-  }
   .evsu-assistant .cs-message--outgoing .cs-message__content-wrapper {
     max-width: 88%;
   }
@@ -554,4 +545,249 @@
   .evsu-assistant__new {
     transition: none;
   }
+}
+
+/* ── Chat history: a panel on the left listing saved chats ── */
+.evsu-assistant__layout {
+  position: relative;
+  display: flex;
+  height: clamp(460px, calc(100vh - 10.5rem), 1100px);
+  height: clamp(460px, calc(100dvh - 10.5rem), 1100px);
+  overflow: hidden;
+  border: 1px solid rgba(70, 35, 25, 0.08);
+  border-radius: var(--g-radius-panel, 20px);
+  background: var(--g-surface);
+  box-shadow: 0 1px 2px rgba(70, 35, 25, 0.04), 0 24px 48px -36px rgba(70, 35, 25, 0.5);
+}
+.evsu-assistant__history {
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  width: 17rem;
+  min-height: 0;
+  border-right: 1px solid var(--g-rule);
+  background: var(--g-sunken);
+}
+.evsu-assistant__history-top {
+  display: flex;
+  gap: 0.5rem;
+  flex: none;
+  padding: 0.75rem;
+}
+.evsu-assistant__new-chat {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  flex: 1;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid var(--g-rule-strong);
+  border-radius: 12px;
+  background: var(--g-surface);
+  color: var(--g-ink);
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+.evsu-assistant__new-chat:hover:not(:disabled) {
+  border-color: rgba(138, 18, 24, 0.4);
+  background: var(--g-maroon-tint);
+  color: var(--g-maroon-deep);
+}
+.evsu-assistant__new-chat:disabled {
+  color: var(--g-ink-faint);
+  cursor: default;
+}
+.evsu-assistant__history-list {
+  flex: 1;
+  min-height: 0;
+  padding: 0 0.5rem 0.5rem;
+  overflow-y: auto;
+}
+.evsu-assistant__history-list ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.evsu-assistant__history-day {
+  margin: 0.85rem 0 0.3rem;
+  padding: 0 0.6rem;
+  color: var(--g-ink-faint);
+  font-family: inherit;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.evsu-assistant__history-list section:first-child .evsu-assistant__history-day {
+  margin-top: 0.25rem;
+}
+.evsu-assistant__history-list li {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-radius: 10px;
+}
+.evsu-assistant__history-list li + li {
+  margin-top: 2px;
+}
+.evsu-assistant__history-list li:hover,
+.evsu-assistant__history-list li:focus-within {
+  background: rgba(70, 35, 25, 0.06);
+}
+.evsu-assistant__history-list li.is-current {
+  background: var(--g-surface);
+  box-shadow: 0 1px 2px rgba(70, 35, 25, 0.08), inset 3px 0 0 var(--g-maroon);
+}
+.evsu-assistant__history-item {
+  flex: 1;
+  min-width: 0;
+  padding: 0.5rem 0.25rem 0.5rem 0.7rem;
+  overflow: hidden;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--g-ink);
+  font-size: 0.875rem;
+  line-height: 1.35;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.evsu-assistant__history-list li.is-current .evsu-assistant__history-item {
+  font-weight: 700;
+}
+.evsu-assistant__history-item:disabled {
+  cursor: default;
+}
+.evsu-assistant__history-delete {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  margin-right: 0.15rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--g-ink-faint);
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 0.12s ease, color 0.12s ease, background-color 0.12s ease;
+}
+.evsu-assistant__history-list li:hover .evsu-assistant__history-delete,
+.evsu-assistant__history-list li.is-current .evsu-assistant__history-delete,
+.evsu-assistant__history-delete:focus-visible {
+  opacity: 1;
+}
+.evsu-assistant__history-delete:hover:not(:disabled) {
+  background: var(--g-danger-tint, #fdebe9);
+  color: var(--g-danger, #b42318);
+}
+.evsu-assistant__history-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 2rem 0.75rem;
+  color: var(--g-ink-faint);
+  font-size: 0.85rem;
+  text-align: center;
+}
+.evsu-assistant__history-note {
+  flex: none;
+  margin: 0;
+  padding: 0.6rem 0.9rem 0.75rem;
+  border-top: 1px solid var(--g-rule);
+  color: var(--g-ink-faint);
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+.evsu-assistant__history-note a {
+  color: var(--g-maroon);
+}
+.evsu-assistant__new-chat:focus-visible,
+.evsu-assistant__history-item:focus-visible,
+.evsu-assistant__history-delete:focus-visible,
+.evsu-assistant__history-open:focus-visible,
+.evsu-assistant__history-close:focus-visible {
+  outline: 3px solid var(--g-gold);
+  outline-offset: -2px;
+}
+/* the buttons that open and close the panel exist only on small screens */
+.evsu-assistant__history-open,
+.evsu-assistant__history-close,
+.evsu-assistant__history-backdrop {
+  display: none;
+}
+@media (hover: none) {
+  .evsu-assistant__history-delete {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 991.98px) {
+  /* the history slides over the chat from the left */
+  .evsu-assistant__history {
+    position: absolute;
+    inset: 0 auto 0 0;
+    z-index: 3;
+    width: min(19rem, 86%);
+    box-shadow: 12px 0 32px -18px rgba(40, 10, 12, 0.5);
+    transform: translateX(-102%);
+    visibility: hidden;
+    transition: transform 0.22s ease, visibility 0.22s;
+  }
+  .evsu-assistant__layout.is-history-open .evsu-assistant__history {
+    transform: none;
+    visibility: visible;
+  }
+  .evsu-assistant__layout.is-history-open .evsu-assistant__history-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: block;
+    border: 0;
+    background: rgba(40, 10, 12, 0.35);
+  }
+  .evsu-assistant__history-open,
+  .evsu-assistant__history-close {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--g-ink);
+    cursor: pointer;
+  }
+  .evsu-assistant__history-open:hover,
+  .evsu-assistant__history-close:hover {
+    background: var(--chat-bubble);
+  }
+  .evsu-assistant__history-open {
+    margin-left: -0.35rem;
+  }
+}
+@media (max-width: 767.98px) {
+  .evsu-assistant__layout {
+    height: calc(100vh - 8.25rem);
+    height: calc(100dvh - 8.25rem);
+    min-height: 400px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .evsu-assistant__history {
+    transition: none;
+  }
+}
+.evsu-assistant__history-list li.is-opening .evsu-assistant__history-item {
+  opacity: 0.55;
+}
+.evsu-assistant__history-empty .btn {
+  margin-top: 0.25rem;
 }

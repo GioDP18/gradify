@@ -6,6 +6,7 @@ import { RefreshToken } from '../models/RefreshToken.js';
 import { ApiError } from '../utils/ApiError.js';
 import { verifyPassword, burnPasswordCheck, checkPasswordStrength, hashPassword } from '../utils/password.js';
 import { recordAudit } from './audit.service.js';
+import { deleteAllChats } from './assistant/chatHistory.service.js';
 
 // Account-wide lock. One client IP is stopped after 10 failures per account by loginLimiter, so
 // reaching this needs failures from several networks: a single attacker can no longer lock a
@@ -303,9 +304,12 @@ export async function getAvatar(userId) {
 export async function updatePreferences(userId, changes, req) {
   const user = await User.findById(userId);
   if (!user || user.status !== USER_STATUSES.ACTIVE) throw ApiError.unauthorized('Session expired. Please sign in again.');
-  const previous = { workingClass: user.preferences?.workingClass ?? true };
+  const previous = { workingClass: user.preferences?.workingClass ?? true, chatHistory: user.preferences?.chatHistory ?? true };
   if (changes.workingClass !== undefined) user.set('preferences.workingClass', changes.workingClass);
+  if (changes.chatHistory !== undefined) user.set('preferences.chatHistory', changes.chatHistory);
   await user.save();
+  // Turning chat history off removes what was saved, so nothing lingers in the account.
+  if (changes.chatHistory === false) await deleteAllChats(user._id);
   await recordAudit({ userId: user._id, action: 'AUTH_PREFERENCES_UPDATE', collection: 'users', recordId: user._id, previousValue: previous, newValue: changes, req });
   return user.toPublic();
 }

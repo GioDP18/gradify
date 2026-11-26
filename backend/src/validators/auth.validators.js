@@ -57,4 +57,5 @@ export const resetPasswordRules = [
 
 export const preferencesRules = [
   body('workingClass').optional().isBoolean({ strict: true }).withMessage('That choice is not valid.'),
+  body('chatHistory').optional().isBoolean({ strict: true }).withMessage('That choice is not valid.'),
 ];

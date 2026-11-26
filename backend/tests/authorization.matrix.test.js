@@ -80,6 +80,7 @@ const ROUTES = [
   r('instructor', 'get', '/api/grading/:period/student/:studentId'), r('instructor', 'get', '/api/grading/:period/student/:studentId/export'),
 
   r('staff', 'get', '/api/assistant'), r('staff', 'post', '/api/assistant/chat'),
+  r('staff', 'get', '/api/assistant/chats'), r('staff', 'get', '/api/assistant/chats/:id'), r('staff', 'delete', '/api/assistant/chats/:id'),
 
   r('instructor', 'get', '/api/dashboard/overview'), r('instructor', 'get', '/api/dashboard/attendance'),
   r('instructor', 'get', '/api/dashboard/performance'), r('instructor', 'get', '/api/dashboard/activity'),
