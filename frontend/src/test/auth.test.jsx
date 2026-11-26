@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderApp, instructor, student, sampleClass } from './renderApp';
 import * as authApi from '../services/authApi';
@@ -89,13 +89,61 @@ describe('login page', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Invalid email/username or password');
   });
 
-  it('"Forgot password?" explains that the administrator sets a new password', async () => {
+  it('"Forgot password?" opens the reset page, and "Contact support" explains the options when the chat is off', async () => {
+    vi.stubEnv('VITE_SUPPORT_CHAT_URL', '');
     renderApp('/login');
-    const link = await screen.findByRole('button', { name: 'Forgot password?' });
-    expect(link).toHaveAttribute('aria-expanded', 'false');
-    await userEvent.click(link);
-    expect(link).toHaveAttribute('aria-expanded', 'true');
-    expect(screen.getByText(/Ask your Gradify administrator to set a new password/)).toBeInTheDocument();
+    const help = await screen.findByRole('button', { name: 'Contact support' });
+    expect(help).toHaveAttribute('aria-expanded', 'false');
+    await userEvent.click(help);
+    expect(help).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText(/ask your Gradify administrator to set a new password/)).toBeInTheDocument();
+
+    await userEvent.click(screen.getAllByRole('link', { name: 'Forgot password?' })[0]);
+    expect(await screen.findByRole('heading', { name: 'Forgot your password?' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Chat with Gradify support' })).not.toBeInTheDocument();
+    vi.unstubAllEnvs();
+  });
+
+  it('"Contact support" opens the chat box, which loads the assistant only then and stays across the sign-in pages', async () => {
+    vi.stubEnv('VITE_SUPPORT_CHAT_URL', 'https://www.noupe.com/agent/abc123');
+    try {
+      renderApp('/login');
+      const contact = await screen.findByRole('button', { name: 'Contact support' });
+      expect(document.querySelector('iframe')).toBeNull();
+
+      await userEvent.click(contact);
+      const chat = screen.getByRole('dialog', { name: 'Gradify support chat' });
+      const frame = within(chat).getByTitle('Gradify support assistant');
+      expect(frame.getAttribute('src').startsWith('https://www.noupe.com/agent/abc123?')).toBe(true);
+      expect(frame).toHaveAttribute('sandbox');
+
+      // moving to "Forgot password?" keeps the same chat open
+      await userEvent.click(screen.getAllByRole('link', { name: 'Forgot password?' })[0]);
+      expect(await screen.findByRole('heading', { name: 'Forgot your password?' })).toBeInTheDocument();
+      expect(within(screen.getByRole('dialog', { name: 'Gradify support chat' })).getByTitle('Gradify support assistant')).toBe(frame);
+
+      // closing hides it but keeps the conversation; the corner button opens it again
+      await userEvent.click(screen.getByRole('button', { name: 'Close chat' }));
+      expect(screen.queryByRole('dialog', { name: 'Gradify support chat' })).not.toBeInTheDocument();
+      await userEvent.click(screen.getByRole('button', { name: 'Chat with Gradify support' }));
+      expect(within(screen.getByRole('dialog', { name: 'Gradify support chat' })).getByTitle('Gradify support assistant')).toBe(frame);
+      await userEvent.keyboard('{Escape}');
+      expect(screen.queryByRole('dialog', { name: 'Gradify support chat' })).not.toBeInTheDocument();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it('ignores a support chat address that is not a Noupe assistant', async () => {
+    vi.stubEnv('VITE_SUPPORT_CHAT_URL', 'https://example.com/agent/abc123');
+    try {
+      renderApp('/login');
+      await userEvent.click(await screen.findByRole('button', { name: 'Contact support' }));
+      expect(screen.getByText(/ask your Gradify administrator to set a new password/)).toBeInTheDocument();
+      expect(document.querySelector('iframe')).toBeNull();
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   it('signs in, passes "remember me", and returns to the page originally requested', async () => {

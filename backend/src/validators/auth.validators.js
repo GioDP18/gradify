@@ -39,6 +39,22 @@ export const changePasswordRules = [
     .custom(passwordFitsBcrypt).withMessage(PASSWORD_TOO_LONG),
 ];
 
+export const forgotPasswordRules = [
+  body('email').isString().withMessage('Enter your email address.').bail().trim().toLowerCase()
+    .isEmail().withMessage('Enter a valid email address.')
+    .isLength({ max: 254 }).withMessage('Email is too long'),
+];
+
+const resetToken = body('token').isString().withMessage('This reset link is not valid.').bail()
+  .isLength({ min: 16, max: 128 }).withMessage('This reset link is not valid.');
+export const resetTokenRules = [resetToken];
+export const resetPasswordRules = [
+  resetToken,
+  body('newPassword').isString().withMessage('Enter a new password').bail()
+    .notEmpty().withMessage('Enter a new password')
+    .custom(passwordFitsBcrypt).withMessage(PASSWORD_TOO_LONG),
+];
+
 export const preferencesRules = [
   body('workingClass').optional().isBoolean({ strict: true }).withMessage('That choice is not valid.'),
 ];
