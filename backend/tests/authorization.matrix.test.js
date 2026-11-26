@@ -79,6 +79,8 @@ const ROUTES = [
   r('instructor', 'get', '/api/grading/:period/export'),
   r('instructor', 'get', '/api/grading/:period/student/:studentId'), r('instructor', 'get', '/api/grading/:period/student/:studentId/export'),
 
+  r('staff', 'get', '/api/assistant'), r('staff', 'post', '/api/assistant/chat'),
+
   r('instructor', 'get', '/api/dashboard/overview'), r('instructor', 'get', '/api/dashboard/attendance'),
   r('instructor', 'get', '/api/dashboard/performance'), r('instructor', 'get', '/api/dashboard/activity'),
 ];
@@ -93,7 +95,7 @@ const MOUNTS = {
   'health.routes.js': ['/api/health'], 'auth.routes.js': ['/api/auth'], 'internal.routes.js': ['/api/internal'],
   'public.routes.js': ['/api/public'], 'admin.routes.js': ['/api/admin'], 'gradingConfig.routes.js': ['/api/grading/configuration'],
   'class.routes.js': ['/api/classes'], 'student.routes.js': ['/api/students'], 'attendance.routes.js': ['/api/attendance'],
-  'assessment.routes.js': ASSESSMENTS.map((m) => `/api/${m}`), 'grading.routes.js': ['/api/grading'], 'dashboard.routes.js': ['/api/dashboard'],
+  'assessment.routes.js': ASSESSMENTS.map((m) => `/api/${m}`), 'grading.routes.js': ['/api/grading'], 'dashboard.routes.js': ['/api/dashboard'], 'assistant.routes.js': ['/api/assistant'],
 };
 
 function registeredRoutes() {

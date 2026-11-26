@@ -109,6 +109,13 @@ export function loadConfig(source = process.env) {
     ? Object.freeze({ host: smtpHost, port: smtpPort, secure: toBool(source, 'SMTP_SECURE', smtpPort === 465, errors), user: smtpUser || null, pass: source.SMTP_PASS || null, from: mailFrom })
     : null;
 
+  // In-app assistant (optional): an AI model on GroqCloud answers questions about using Gradify.
+  // Off unless GROQ_API_KEY is set; everything else in the app works without it.
+  const groqKey = source.GROQ_API_KEY?.trim() || '';
+  const groqModel = source.GROQ_MODEL?.trim() || 'openai/gpt-oss-20b';
+  if (groqKey && !/^[\w./:-]{1,100}$/.test(groqModel)) errors.push('GROQ_MODEL must be a GroqCloud model id, e.g. openai/gpt-oss-20b');
+  const assistant = groqKey ? Object.freeze({ apiKey: groqKey, model: groqModel }) : null;
+
   const config = {
     nodeEnv,
     isProduction: nodeEnv === 'production',
@@ -141,6 +148,7 @@ export function loadConfig(source = process.env) {
     // QR self-enrollment submissions per client IP per class link per 15 minutes (0 disables it).
     selfEnrollIpLimit: toInt(source, 'SELF_ENROLL_IP_LIMIT', 150, { min: 0, max: 10000 }, errors),
     mail,
+    assistant,
     // Audit-log retention in days (0 = keep forever). See services/auditRetention.service.js.
     auditRetention: Object.freeze({
       ipDays: toInt(source, 'AUDIT_IP_RETENTION_DAYS', 90, { min: 0, max: 36500 }, errors),

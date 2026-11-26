@@ -15,6 +15,7 @@ import internalRoutes from './internal.routes.js';
 import gradingConfigRoutes from './gradingConfig.routes.js';
 import adminRoutes from './admin.routes.js';
 import publicRoutes from './public.routes.js';
+import assistantRoutes from './assistant.routes.js';
 
 /** Mounts every API module under /api. Feature routes are added here phase by phase. */
 const router = Router();
@@ -29,6 +30,9 @@ router.use('/public', publicRoutes); // no sign-in: QR self-enrollment // cron-s
 router.use('/grading/configuration', authenticate, authorize(ROLES.INSTRUCTOR, ROLES.ADMIN), gradingConfigRoutes);
 // Administrator: instructor accounts (D23).
 router.use('/admin', authenticate, authorize(ROLES.ADMIN), adminRoutes);
+
+// In-app assistant: answers questions about using Gradify (no access to records).
+router.use('/assistant', authenticate, authorize(ROLES.INSTRUCTOR, ROLES.ADMIN), assistantRoutes);
 
 // Everything below is instructor-only.
 const instructorOnly = [authenticate, authorize(ROLES.INSTRUCTOR)];
