@@ -152,6 +152,21 @@ describe('POST /api/assistant/chat', () => {
     expect(JSON.parse(results(5)[0])).toEqual({ note: 'No student of this instructor matches that.' });
   });
 
+  it('looks up several students at once, and a full student number or name settles who is meant', async () => {
+    const { me, ana } = await instructorWithClass();
+    await me.post('/api/students', validStudent({ firstName: 'Ana', lastName: 'Reyes', middleName: 'Zamora', studentNumber: `${ana.studentNumber}9` }));
+
+    fakeFetch.mockResolvedValueOnce(lookups(['get_student_grades', { students: [ana.studentNumber, 'Reyes', 'Nobody Here'] }])).mockResolvedValueOnce(answer('ok'));
+    await ask(me, question('Why are they failing? Each one of them.'));
+    const { students } = JSON.parse(results(1)[0]);
+    expect(students.map((s) => s.askedFor)).toEqual([ana.studentNumber, 'Reyes', 'Nobody Here']);
+    // the number is also the start of the other student's number, yet it is exactly Ana's
+    expect(students[0].student.studentNumber).toBe(ana.studentNumber);
+    expect(students[0].classes[0].class).toBe('IT 333 · BSIT-3A');
+    expect(students[1].matches).toHaveLength(2);
+    expect(students[2]).toEqual({ askedFor: 'Nobody Here', note: 'No student of this instructor matches that.' });
+  });
+
   it('reports what is recorded in a class and each student\'s attendance', async () => {
     const { me, cls } = await instructorWithClass();
     fakeFetch.mockResolvedValueOnce(lookups(['get_class_records', { classId: cls.id }], ['get_class_attendance', { classId: cls.id }])).mockResolvedValueOnce(answer('ok'));

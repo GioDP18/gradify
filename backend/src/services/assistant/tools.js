@@ -29,6 +29,9 @@ const round = (n) => (typeof n === 'number' ? Math.round(n * 100) / 100 : null);
 const className = (c) => `${c.subjectCode} · ${c.section}`;
 const isId = (value) => typeof value === 'string' && mongoose.isValidObjectId(value);
 
+/** The model sometimes writes a student number with a typographic dash. */
+const DASHES = /[‐-―−]/g;
+
 class ToolInputError extends Error {}
 const needId = (value, what) => {
   if (!isId(value)) throw new ToolInputError(`${what} must be an id taken from an earlier result.`);
@@ -57,22 +60,24 @@ function gradeLine(row) {
 }
 
 /** A period's result with its components (attendance, quizzes, activities, exam). */
-function gradeDetail(grade) {
+function gradeDetail(grade, compact = false) {
   if (!grade) return null;
   return {
     status: grade.completionStatus,
     percent: round(grade.percentage),
-    roundedPercent: grade.roundedPercent ?? null,
+    ...(compact ? {} : { roundedPercent: grade.roundedPercent ?? null }),
     grade: grade.grade ?? null,
     remarks: grade.remarks ?? null,
-    ...(grade.components?.length
+    ...(grade.components?.length && compact
+      ? { components: grade.components.map((c) => [c.label, c.weight, `${c.rawScore}/${c.maxScore}`, round(c.percentage), round(c.weightedContribution), ...(c.key === 'ATTENDANCE' ? [`${c.absent} absent`] : [])].join(' | ')) }
+      : grade.components?.length
       ? { components: grade.components.map((c) => ({ component: c.label, weight: c.weight, score: c.rawScore, outOf: c.maxScore, percent: round(c.percentage), weighted: round(c.weightedContribution), ...(c.key === 'ATTENDANCE' ? { present: c.present, absent: c.absent, excused: c.excused } : {}) })) }
       : {}),
     ...(grade.periodResults
       ? { periods: Object.fromEntries(Object.entries(grade.periodResults).map(([period, r]) => [period, { status: r.status, percent: round(r.percentage), grade: r.grade ?? null, weight: r.weight, weighted: round(r.weightedContribution) }])) }
       : {}),
     ...(grade.missingItems?.length ? { missing: grade.missingItems.map((m) => `${m.componentLabel ?? m.component}: ${m.title}`).slice(0, 15) } : {}),
-    ...(grade.incDeadline ? { incDeadline: String(grade.incDeadline).slice(0, 10) } : {}),
+    ...(grade.incDeadline && grade.completionStatus === 'INCOMPLETE' ? { incDeadline: new Date(grade.incDeadline).toISOString().slice(0, 10) } : {}),
   };
 }
 
@@ -100,7 +105,7 @@ export async function classList(userId) {
  * word is searched and every word must appear in the student's name or number.
  */
 async function findStudents(userId, text) {
-  const query = String(text ?? '').replace(/[,.]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
+  const query = String(text ?? '').replace(DASHES, '-').replace(/[,.]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
   if (!query) throw new ToolInputError('student must be a name or a student number.');
   const direct = (await listStudents(userId, { search: query, limit: 8 })).items;
   if (direct.length) return direct;
@@ -112,6 +117,41 @@ async function findStudents(userId, text) {
     const hay = `${s.firstName} ${s.middleName ?? ''} ${s.lastName} ${s.studentNumber}`.toLowerCase();
     return words.every((w) => hay.includes(w));
   }).slice(0, 8);
+}
+
+/** How many students' grading sheets one lookup may return. */
+const MAX_SHEETS = 8;
+const plain = (text) => String(text ?? '').toLowerCase().replace(DASHES, '-').replace(/[,.]/g, ' ').replace(/\s+/g, ' ').trim();
+
+/** One student's grading sheet across the instructor's classes, or the matches when the text is unclear. */
+async function studentSheet(userId, text, compact = false) {
+  let matches = await findStudents(userId, text);
+  if (!matches.length) return { note: 'No student of this instructor matches that.' };
+  if (matches.length > 1) {
+    // A full student number or a full name settles it, even when it is also part of someone else's.
+    const exact = matches.filter((m) => plain(m.studentNumber) === plain(text) || plain(m.fullName) === plain(text));
+    if (exact.length === 1) matches = exact;
+  }
+  if (matches.length > 1) {
+    return {
+      note: 'More than one student matches. If the conversation already shows which one is meant, look up again with that student number; only otherwise ask which one.',
+      matches: matches.map((m) => `${m.fullName} | ${m.studentNumber} | ${m.course} ${m.yearLevel}-${m.section}`),
+    };
+  }
+  const [found] = matches;
+  const classes = await getStudentGradesAcrossClasses(userId, found.id);
+  return {
+    student: { name: found.fullName, studentNumber: found.studentNumber, course: found.course, yearLevel: found.yearLevel, section: found.section },
+    ...(classes.length ? {} : { note: 'This student has no grades in any class yet.' }),
+    classes: classes.map((c) => ({
+      class: className(c),
+      schoolYear: c.schoolYear,
+      semester: SEMESTERS[c.semester] ?? c.semester,
+      midterm: gradeDetail(c.grades.MIDTERM, compact),
+      finals: gradeDetail(c.grades.FINALS, compact),
+      finalGrade: gradeDetail(c.grades.OVERALL, compact),
+    })),
+  };
 }
 
 const param = (properties, required = Object.keys(properties)) => ({ type: 'object', properties, required, additionalProperties: false });
@@ -151,28 +191,15 @@ const INSTRUCTOR_TOOLS = [
   },
   {
     name: 'get_student_grades',
-    description: 'One student\'s grading sheet, found by name or student number: Midterm and Finals by component (score, out of, percent, weighted), the Final Grade, and what is missing. If several students match, it lists them instead.',
-    parameters: param({ student: { type: 'string', description: 'A name (or part of one) or a student number.' } }),
-    run: async (user, { student }) => {
-      const matches = await findStudents(user.id, student);
-      if (!matches.length) return { note: 'No student of this instructor matches that.' };
-      if (matches.length > 1) {
-        return { note: 'More than one student matches. Ask which one, or look up again with the student number.', matches: matches.map((m) => `${m.fullName} | ${m.studentNumber} | ${m.course} ${m.yearLevel}-${m.section}`) };
-      }
-      const [found] = matches;
-      const classes = await getStudentGradesAcrossClasses(user.id, found.id);
-      return {
-        student: { name: found.fullName, studentNumber: found.studentNumber, course: found.course, yearLevel: found.yearLevel, section: found.section },
-        ...(classes.length ? {} : { note: 'This student has no grades in any class yet.' }),
-        classes: classes.map((c) => ({
-          class: className(c),
-          schoolYear: c.schoolYear,
-          semester: SEMESTERS[c.semester] ?? c.semester,
-          midterm: gradeDetail(c.grades.MIDTERM),
-          finals: gradeDetail(c.grades.FINALS),
-          finalGrade: gradeDetail(c.grades.OVERALL),
-        })),
-      };
+    description: `The grading sheet of one or several students (up to ${MAX_SHEETS} at once), each found by student number or name: Midterm and Finals by component (score, out of, percent, weighted), the Final Grade, and what is missing. Use it to explain why a student has a grade. For students already named in the conversation, pass their student numbers, all in one call. If several students match one entry, it lists them instead.`,
+    parameters: param({ students: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: MAX_SHEETS, description: 'Student numbers (best, when known from the conversation) or names.' } }),
+    run: async (user, { students, student }) => {
+      const wanted = (Array.isArray(students) ? students : [students ?? student]).filter((s) => typeof s === 'string' && s.trim()).slice(0, MAX_SHEETS);
+      if (!wanted.length) throw new ToolInputError('students must be a list of student numbers or names.');
+      const sheets = [];
+      // Several at once are written shorter (one line per component), so the answer stays within what one request may send.
+      for (const entry of wanted) sheets.push(await studentSheet(user.id, entry, wanted.length > 1)); // one at a time: gentle on the database
+      return sheets.length === 1 ? sheets[0] : { componentColumns: 'component | weight % | score/out of | percent | weighted points', students: sheets.map((sheet, i) => ({ askedFor: wanted[i], ...sheet })) };
     },
   },
   {

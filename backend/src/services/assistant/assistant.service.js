@@ -58,7 +58,9 @@ async function instructions(user) {
     admin
       ? '- For questions about instructor accounts, use the lookup and answer from its result. The administrator has no classes or students, so you cannot look those up.'
       : '- For any question about their classes, students, attendance, scores or grades, use the lookups and answer from the results. Never guess or invent a name, number or grade. "Your classes" below is current, so questions it answers need no lookup.',
-    '- If a question could mean more than one class or student, ask which one, or answer for each.',
+    '- Read the whole conversation before answering. A follow-up ("they", "them", "each one", "that class", "the second one") is about the students or class in the earlier messages: carry on with those, using the student numbers and class already shown, and answer for every one of them. Do not ask again for something the conversation already makes clear.',
+    '- Only when a question could mean more than one class or student and the conversation does not settle it, ask which one, or answer for each.',
+    '- When asked why a student has a grade or is failing, look up the grading sheet and point to what pulled the grade down: the weakest components (exam, quizzes, activities, attendance) with their scores, and anything missing. The scale, on the rounded percent: 95-100 = 1.0; 75-94 = (105 − percent) ÷ 10; 70-74 = 4.0; 69 and below = 5.0. Passing is 3.0 (75%) unless a lookup shows another passing grade. Never state any other passing mark.',
     '- Show lists of students as a table, and do not list more than is asked for.',
     '- The lookups are read-only: you cannot add, change or delete anything. When asked to change something, say where in Gradify to do it.',
     '- When asked to compute a grade from numbers the person gives, read the grade_computation topic, then show the working step by step.',
@@ -84,7 +86,8 @@ function recent(messages) {
   return kept;
 }
 
-const MAX_WAIT_MS = 9000;
+/** A follow-up soon after a data question can be over the per-minute allowance for some seconds. */
+const MAX_WAIT_MS = 20000;
 const sleep = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
 
 /** One request to the model service; returns its reply message. */
