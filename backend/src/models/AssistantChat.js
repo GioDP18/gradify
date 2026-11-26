@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 /**
  * One saved conversation with the in-app assistant. Chats belong to the account, so the history
  * is the same on every device the person signs in on. They are kept only while the person's
- * "Keep chat history" setting is on (turning it off deletes them all), and only the most recent
+ * "Keep chat history" setting is on (turning it off only stops new saving; nothing is deleted), and only the most recent
  * ones per account are kept (services/assistant/chatHistory.service.js).
  */
 const messageSchema = new mongoose.Schema(

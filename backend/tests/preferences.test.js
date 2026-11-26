@@ -36,7 +36,7 @@ describe('PATCH /api/auth/me/preferences', () => {
     expect((await patch(me, { chatHistory: 'off' })).status).toBe(422);
   });
 
-  it('deletes the saved chats of that account, and only that account, when chat history is turned off', async () => {
+  it('keeps the saved chats when chat history is turned off and on again', async () => {
     const me = await instructorSession(app);
     const other = await instructorSession(app);
     const messages = [{ role: 'user', content: 'Hi' }, { role: 'assistant', content: 'Hello' }];
@@ -48,7 +48,11 @@ describe('PATCH /api/auth/me/preferences', () => {
     expect(await AssistantChat.countDocuments({ user: me.user._id })).toBe(2);
 
     await patch(me, { chatHistory: false });
-    expect(await AssistantChat.countDocuments({ user: me.user._id })).toBe(0);
+    expect(await AssistantChat.countDocuments({ user: me.user._id })).toBe(2);
+    await patch(me, { chatHistory: true });
+    await patch(me, { chatHistory: false });
+    await patch(me, { chatHistory: true });
+    expect((await me.get('/api/assistant/chats')).body.data.map((c) => c.title).sort()).toEqual(['Hi', 'Hi again']);
     expect(await AssistantChat.countDocuments({ user: other.user._id })).toBe(1);
   });
 
