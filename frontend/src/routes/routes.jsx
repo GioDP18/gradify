@@ -40,6 +40,7 @@ const UsersPage = lazyPage(() => import('../pages/admin/UsersPage'));
 const ProfilePage = lazyPage(() => import('../pages/profile/ProfilePage'));
 const JoinClassPage = lazyPage(() => import('../pages/public/JoinClassPage'));
 const MyGradesPage = lazyPage(() => import('../pages/public/MyGradesPage'));
+const AssistantPage = lazyPage(() => import('../pages/assistant/AssistantPage'));
 const SystemStatusPage = lazyPage(() => import('../pages/system/SystemStatusPage'));
 
 /**
@@ -136,6 +137,8 @@ export const routes = [
                       },
                     ],
                   },
+                  // The AI assistant: answers questions about using Gradify (instructors and the administrator).
+                  { path: 'assistant', element: <AssistantPage />, handle: { title: 'Chat', crumb: 'Chat' } },
                   // Old addresses keep working.
                   { path: 'profile', element: <Navigate to="/settings/profile" replace /> },
 

@@ -11,7 +11,11 @@ import {
   UserCog,
   SlidersHorizontal,
   UserRound,
+  Bot,
 } from 'lucide-react';
+
+/** The AI assistant that answers questions about using Gradify (both roles). */
+const ASSISTANT = { to: '/assistant', label: 'Chat', icon: Bot, ready: true };
 
 /**
  * Sidebar navigation, grouped by what an instructor is doing. `ready: false` items render
@@ -36,6 +40,7 @@ export const NAV_GROUPS = [
     ],
   },
   { label: 'Results', items: [{ to: '/grading', label: 'Grading', icon: GraduationCap, ready: true }] },
+  { label: 'Assistant', items: [ASSISTANT] },
   { label: 'Preferences', items: [{ to: '/settings', label: 'Settings', icon: Settings, ready: true }] },
 ];
 
@@ -49,6 +54,7 @@ export const ADMIN_NAV_GROUPS = [
     ],
   },
   { label: 'Account', items: [{ to: '/settings/profile', label: 'My profile', icon: UserRound, ready: true }] },
+  { label: 'Assistant', items: [ASSISTANT] },
 ];
 
 export const navGroupsFor = (role) => (role === 'ADMIN' ? ADMIN_NAV_GROUPS : NAV_GROUPS);

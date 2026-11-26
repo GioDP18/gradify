@@ -105,6 +105,22 @@ export const studentEmailLimiter = rateLimit({
 });
 
 /**
+ * Questions to the in-app assistant, per signed-in user: 30 per 15 minutes. Each one is a paid or
+ * metered call to the AI service, so this also keeps one account from using up the allowance.
+ */
+export const assistantLimiter = rateLimit({
+  windowMs: WINDOW_MS,
+  limit: 30,
+  skip: () => env.isTest,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  passOnStoreError: true,
+  store: new MongoRateLimitStore({ prefix: 'assistant' }),
+  keyGenerator: (req) => String(req.user?.id ?? '(anonymous)'),
+  handler: (req, res, next) => next(ApiError.tooManyRequests('You have asked a lot of questions in a short time. Please wait 15 minutes and try again.')),
+});
+
+/**
  * Re-entering the current password on the profile page (per signed-in user). Only failed
  * attempts count, so a stolen access token cannot be used to guess the password.
  */
