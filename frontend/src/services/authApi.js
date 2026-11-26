@@ -28,6 +28,24 @@ export async function logout() {
   tokenStore.clear();
 }
 
+/** Forgot password, step 1: ask for a reset link. The answer is the same whether or not the address has an account. */
+export async function requestPasswordReset(email) {
+  const response = await apiClient.post('/auth/password/forgot', { email }, { skipAuthRefresh: true, timeout: 45000 });
+  return response.data.data;
+}
+
+/** Forgot password, step 2: is the emailed link still good? */
+export async function checkResetToken(token) {
+  const response = await apiClient.post('/auth/password/reset/check', { token }, { skipAuthRefresh: true });
+  return response.data.data.valid;
+}
+
+/** Forgot password, step 2: set the new password with the emailed link. */
+export async function resetPassword(token, newPassword) {
+  const response = await apiClient.post('/auth/password/reset', { token, newPassword }, { skipAuthRefresh: true, timeout: 45000 });
+  return response.data.data;
+}
+
 export async function fetchCurrentUser() {
   const response = await apiClient.get('/auth/me');
   return response.data.data.user;

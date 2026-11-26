@@ -89,13 +89,16 @@ describe('login page', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Invalid email/username or password');
   });
 
-  it('"Forgot password?" explains that the administrator sets a new password', async () => {
+  it('"Forgot password?" opens the reset page, and "Contact support" explains the options', async () => {
     renderApp('/login');
-    const link = await screen.findByRole('button', { name: 'Forgot password?' });
-    expect(link).toHaveAttribute('aria-expanded', 'false');
-    await userEvent.click(link);
-    expect(link).toHaveAttribute('aria-expanded', 'true');
-    expect(screen.getByText(/Ask your Gradify administrator to set a new password/)).toBeInTheDocument();
+    const help = await screen.findByRole('button', { name: 'Contact support' });
+    expect(help).toHaveAttribute('aria-expanded', 'false');
+    await userEvent.click(help);
+    expect(help).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText(/ask your Gradify administrator to set a new password/)).toBeInTheDocument();
+
+    await userEvent.click(screen.getAllByRole('link', { name: 'Forgot password?' })[0]);
+    expect(await screen.findByRole('heading', { name: 'Forgot your password?' })).toBeInTheDocument();
   });
 
   it('signs in, passes "remember me", and returns to the page originally requested', async () => {

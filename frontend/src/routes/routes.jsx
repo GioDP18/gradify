@@ -6,6 +6,10 @@ import { ProtectedRoute, PublicOnlyRoute, RoleRoute } from './guards';
 import SplashScreen from '../components/common/SplashScreen';
 import AppLayout from '../components/layout/AppLayout';
 import LoginPage from '../pages/auth/LoginPage';
+// The signed-out pages share one shell and load with it, so switching between them is instant.
+import AuthShell from '../pages/auth/AuthShell';
+import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage';
+import ResetPasswordPage from '../pages/auth/ResetPasswordPage';
 import { ASSESSMENT_TYPES } from '../config/assessmentTypes';
 import NotFoundPage from '../pages/system/NotFoundPage';
 import { loadingProgress } from '../services/loadingProgress';
@@ -51,13 +55,23 @@ function HomeRoute() {
  * Exported (not just rendered) so tests can mount it in a memory router.
  */
 export const routes = [
+  // Signed-out pages in one shell (photo, ribbons, card): only the card's contents change between them.
   {
-    path: '/login',
-    element: (
-      <PublicOnlyRoute>
-        <LoginPage />
-      </PublicOnlyRoute>
-    ),
+    element: <AuthShell />,
+    errorElement: <RouteErrorPage />,
+    children: [
+      {
+        path: '/login',
+        element: (
+          <PublicOnlyRoute>
+            <LoginPage />
+          </PublicOnlyRoute>
+        ),
+      },
+      // Forgot password: ask for a reset link by email, then choose a new password with it.
+      { path: '/forgot-password', element: <ForgotPasswordPage /> },
+      { path: '/reset-password/:token?', element: <ResetPasswordPage /> },
+    ],
   },
   // Public (no sign-in): the page a class's QR code opens, where students enroll themselves.
   {

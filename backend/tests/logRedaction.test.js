@@ -21,6 +21,10 @@ describe('redactUrl', () => {
 
   it('leaves other paths, and non-strings, alone', () => {
     expect(redactUrl('/api/classes/64b0c0ffee0000000000abcd/enrollments')).toBe('/api/classes/64b0c0ffee0000000000abcd/enrollments');
+    // Other private links: a student's shared grading sheet, and password reset links.
+    expect(redactUrl('/api/public/grades/WywuQIW5gxPchtx1gDaJJmDD')).toBe('/api/public/grades/[redacted]');
+    expect(redactUrl('https://gradify.example/my-grades/WywuQIW5gxPchtx1gDaJJmDD')).toBe('https://gradify.example/my-grades/[redacted]');
+    expect(redactUrl('https://gradify.example/reset-password/abcDEF123_-abcDEF123_-abcDEF123_-abcDEF1234')).toBe('https://gradify.example/reset-password/[redacted]');
     expect(redactUrl(undefined)).toBeUndefined();
     expect(redactUrl('')).toBe('');
   });

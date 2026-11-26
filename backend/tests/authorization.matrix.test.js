@@ -33,6 +33,7 @@ const r = (access, method, route) => ({ access, method, route });
 const ROUTES = [
   r('public', 'get', '/api/health'),
   r('public', 'post', '/api/auth/login'), r('public', 'post', '/api/auth/refresh'), r('public', 'post', '/api/auth/logout'),
+  r('public', 'post', '/api/auth/password/forgot'), r('public', 'post', '/api/auth/password/reset/check'), r('public', 'post', '/api/auth/password/reset'),
   r('public', 'get', '/api/public/enroll/:token'), r('public', 'post', '/api/public/enroll/:token'),
   r('public', 'get', '/api/public/grades/:token'),
   r('cron', 'get', '/api/internal/sweep'),

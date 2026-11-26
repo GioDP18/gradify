@@ -458,3 +458,87 @@
     white-space: normal;
   }
 }
+
+/* ── Forgot password / new password (same card as sign-in) ── */
+.lg__text {
+  margin: 0 0 calc(18 * var(--u));
+  color: #3f383c;
+  font-size: max(14px, calc(18 * var(--u)));
+  text-align: center;
+}
+.lg__text strong {
+  word-break: break-word;
+}
+.lg__notice-icon {
+  display: grid;
+  place-items: center;
+  width: calc(64 * var(--u));
+  height: calc(64 * var(--u));
+  min-width: 48px;
+  min-height: 48px;
+  margin: calc(6 * var(--u)) auto calc(12 * var(--u));
+  border-radius: 50%;
+  background: rgba(138, 18, 24, 0.08);
+  color: #8a1218;
+}
+.lg__notice-icon.is-success {
+  background: rgba(31, 122, 77, 0.12);
+  color: #1f7a4d;
+}
+.lg__back {
+  margin: calc(16 * var(--u)) 0 0;
+  text-align: center;
+  font-size: max(13px, calc(17 * var(--u)));
+}
+a.lg__submit {
+  text-decoration: none;
+}
+/* Password requirements, ticked off as they are met. */
+.lg__rules {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: calc(6 * var(--u)) calc(12 * var(--u));
+  margin: 0 0 calc(16 * var(--u));
+  padding: 0;
+  list-style: none;
+  font-size: max(12px, calc(15 * var(--u)));
+  color: #6b6064;
+  text-align: left;
+}
+.lg__rules li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.lg__rule-mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  border: 1.5px solid #cfc5c5;
+}
+.lg__rules li.is-met {
+  color: #1f7a4d;
+  font-weight: 600;
+}
+.lg__rules li.is-met .lg__rule-mark {
+  border-color: #1f7a4d;
+  background: #1f7a4d;
+  color: #fff;
+}
+
+/* The card's contents fade in when moving between sign in, forgot password and new password. */
+.lg__swap {
+  animation: lg-swap 220ms ease-out both;
+}
+@keyframes lg-swap {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lg__swap {
+    animation: none;
+  }
+}

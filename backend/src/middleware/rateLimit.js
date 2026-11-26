@@ -73,6 +73,24 @@ export const selfEnrollLimiter = rateLimit({
   handler: (req, res, next) => next(ApiError.tooManyRequests('Too many enrollment attempts for this class from your network. Please wait 15 minutes and try again.')),
 });
 
+/**
+ * "Forgot password" (no sign-in), per client IP, counted in MongoDB so it holds across all
+ * serverless instances. Asking for a link: 5 per 15 minutes (each account is also limited per
+ * hour in the service). Opening or submitting a link: 20 per 15 minutes.
+ */
+const resetLimiter = (prefix, limit, message) => rateLimit({
+  windowMs: WINDOW_MS,
+  limit,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  passOnStoreError: true,
+  store: new MongoRateLimitStore({ prefix }),
+  keyGenerator: (req) => ipKeyGenerator(req.ip ?? ''),
+  handler: (req, res, next) => next(ApiError.tooManyRequests(message)),
+});
+export const passwordResetRequestLimiter = resetLimiter('password-reset-request', 5, 'Too many reset requests. Please wait 15 minutes and try again.');
+export const passwordResetSubmitLimiter = resetLimiter('password-reset-submit', 20, 'Too many attempts. Please wait 15 minutes and try again.');
+
 /** Emails sent to students (grading sheet links), per signed-in instructor: 60 per 15 minutes. */
 export const studentEmailLimiter = rateLimit({
   windowMs: WINDOW_MS,
