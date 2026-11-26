@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useOutletContext } from 'react-router-dom';
 import { ArrowRight, CircleAlert, Eye, EyeOff, Lock, User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import Spinner from '../../components/common/Spinner';
@@ -12,6 +12,8 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [formError, setFormError] = useState(null);
   const [showHelp, setShowHelp] = useState(false);
+  // With the support chat set up, "Contact support" opens the chat box (see AuthShell); otherwise it shows what to do.
+  const openChat = useOutletContext()?.openSupportChat ?? null;
 
   const {
     register,
@@ -108,11 +110,15 @@ export default function LoginPage() {
 
           <p className="lg__help-line">
             <span>Need help signing in? </span>
-            <button type="button" className="lg__link" aria-expanded={showHelp} aria-controls="login-help" onClick={() => setShowHelp((v) => !v)}>
-              Contact support
-            </button>
+            {openChat ? (
+              <button type="button" className="lg__link" aria-haspopup="dialog" onClick={openChat}>Contact support</button>
+            ) : (
+              <button type="button" className="lg__link" aria-expanded={showHelp} aria-controls="login-help" onClick={() => setShowHelp((v) => !v)}>
+                Contact support
+              </button>
+            )}
           </p>
-          {/* There is no support desk: besides the emailed reset link, the administrator can set passwords (D23). */}
+          {/* Shown when the support chat is turned off: besides the emailed reset link, the administrator can set passwords (D23). */}
           <div id="login-help" role="status">
             {showHelp && (
               <p className="lg__help">

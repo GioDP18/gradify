@@ -1,9 +1,12 @@
+import { useCallback, useMemo, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { ShieldCheck } from 'lucide-react';
 import { AUTH_STATUS, useAuth } from '../../context/AuthContext';
 import SplashScreen from '../../components/common/SplashScreen';
 import logo from '../../assets/brand/gradify-logo-clear.webp';
 import campus from '../../assets/brand/evsu-campus-photo.webp';
+import SupportChat from './SupportChat';
+import { supportChatUrl } from '../../utils/supportChat';
 import './auth.css';
 
 /*
@@ -84,6 +87,13 @@ function Ribbons() {
 export default function AuthShell() {
   const { status } = useAuth();
   const { pathname } = useLocation();
+  // The support chat box lives here, so it stays open while moving between the sign-in pages and
+  // is gone once the person signs in.
+  const chatUrl = supportChatUrl();
+  const [chatOpen, setChatOpen] = useState(false);
+  const openSupportChat = useCallback(() => setChatOpen(true), []);
+  const closeSupportChat = useCallback(() => setChatOpen(false), []);
+  const outletContext = useMemo(() => ({ openSupportChat: chatUrl ? openSupportChat : null }), [chatUrl, openSupportChat]);
   // Until the saved session has been checked, nothing is drawn (a signed-in user never sees these pages flash).
   if (status === AUTH_STATUS.LOADING) return <SplashScreen label="Checking your session…" />;
   return (
@@ -111,7 +121,7 @@ export default function AuthShell() {
           <img src={logo} alt="Gradify, EVSU Grading System" className="lg__logo" width="560" height="560" />
           {/* Only this part changes between the pages; it fades in so the switch reads as one card changing. */}
           <div key={pathname.split('/')[1]} className="lg__swap">
-            <Outlet />
+            <Outlet context={outletContext} />
           </div>
         </div>
 
@@ -121,6 +131,7 @@ export default function AuthShell() {
           <span className="lg__secure"><ShieldCheck fill="currentColor" stroke="#fff" aria-hidden="true" /> Secure instructor access</span>
         </footer>
       </main>
+      {chatUrl && <SupportChat url={chatUrl} open={chatOpen} onOpen={openSupportChat} onClose={closeSupportChat} />}
     </div>
   );
 }

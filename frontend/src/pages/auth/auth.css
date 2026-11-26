@@ -542,3 +542,129 @@ a.lg__submit {
     animation: none;
   }
 }
+
+/* ── Support chat box (the AI assistant, shown in a frame) ── */
+.lg-chat__launcher {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--lg-maroon);
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(60, 10, 14, 0.35);
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+.lg-chat__launcher:hover {
+  background: #6f0d12;
+  transform: translateY(-2px);
+}
+.lg-chat__launcher svg {
+  width: 26px;
+  height: 26px;
+}
+.lg-chat {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 41;
+  display: flex;
+  flex-direction: column;
+  width: min(400px, calc(100vw - 40px));
+  height: min(640px, calc(100vh - 40px));
+  height: min(640px, calc(100dvh - 40px));
+  overflow: hidden;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 16px 48px rgba(40, 10, 12, 0.32), 0 0 0 1px rgba(60, 10, 14, 0.08);
+  font-family: 'Lato', sans-serif;
+  animation: lg-chat-in 0.18s ease-out;
+}
+.lg-chat[hidden] {
+  display: none;
+}
+@keyframes lg-chat-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+.lg-chat__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: none;
+  padding: 10px 10px 10px 16px;
+  background: var(--lg-maroon);
+  color: #fff;
+}
+.lg-chat__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+}
+.lg-chat__title svg {
+  width: 18px;
+  height: 18px;
+}
+.lg-chat__close {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+}
+.lg-chat__close:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+.lg-chat__close svg {
+  width: 20px;
+  height: 20px;
+}
+.lg-chat__launcher:focus-visible,
+.lg-chat__close:focus-visible {
+  outline: 3px solid var(--lg-gold);
+  outline-offset: 2px;
+}
+.lg-chat__body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+.lg-chat__wait {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--lg-ink);
+}
+.lg-chat__frame {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+@media (max-width: 520px) {
+  /* on a phone the chat fills the screen */
+  .lg-chat {
+    inset: 0;
+    width: auto;
+    height: auto;
+    border-radius: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lg-chat { animation: none; }
+  .lg-chat__launcher { transition: none; }
+}
