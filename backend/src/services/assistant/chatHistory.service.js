@@ -2,7 +2,9 @@
  * The assistant's chat history, saved to the person's account so it is the same on any device.
  *
  * Saving follows the account's "Keep chat history" setting (Settings > Assistant): while it is on,
- * each conversation is saved after every answer; turning it off deletes every saved chat. A person
+ * each conversation is saved after every answer; while it is off, nothing new is saved. Turning it
+ * off never deletes anything: the saved chats are there again when it is turned back on, and a chat
+ * goes only when the person deletes it (or it falls out of the most recent ones kept). A person
  * only ever sees, opens or deletes their own chats (anyone else's is "not found").
  */
 import mongoose from 'mongoose';
@@ -67,10 +69,4 @@ export async function deleteChat(userId, chatId) {
   if (!mongoose.isValidObjectId(chatId)) throw notFound();
   const { deletedCount } = await AssistantChat.deleteOne({ _id: chatId, user: userId });
   if (!deletedCount) throw notFound();
-}
-
-/** Deletes every saved chat of the account (used when "Keep chat history" is turned off). */
-export async function deleteAllChats(userId) {
-  const { deletedCount } = await AssistantChat.deleteMany({ user: userId });
-  return deletedCount;
 }

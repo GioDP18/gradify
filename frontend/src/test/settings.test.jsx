@@ -42,7 +42,7 @@ describe('settings page', () => {
     expect(await screen.findByText(/Each page now has its own class selector/)).toBeInTheDocument();
   });
 
-  it('turns the assistant\'s chat history off (the account\'s saved chats are deleted)', async () => {
+  it('turns the assistant\'s chat history off (the saved chats are kept)', async () => {
     vi.mocked(authApi.restoreSession).mockResolvedValue(withPref(true));
     vi.mocked(authApi.updatePreferences).mockResolvedValue({ ...withPref(true), preferences: { workingClass: true, chatHistory: false } });
     renderApp('/settings');
@@ -53,8 +53,8 @@ describe('settings page', () => {
     await userEvent.click(toggle);
     await waitFor(() => expect(authApi.updatePreferences).toHaveBeenCalledWith({ chatHistory: false }));
     expect(toggle).not.toBeChecked();
-    expect(await screen.findByText(/Your saved chats were deleted/)).toBeInTheDocument();
-    expect(screen.getByText(/Off: nothing is saved/)).toBeInTheDocument();
+    expect(await screen.findByText(/Your saved chats are kept/)).toBeInTheDocument();
+    expect(screen.getByText(/Off: new conversations are not saved/)).toBeInTheDocument();
   });
 
   it('puts the switch back when saving fails', async () => {

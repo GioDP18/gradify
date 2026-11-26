@@ -80,8 +80,8 @@ export default function SettingsPage() {
   const setWorkingClass = (on) => setPreference('workingClass', on, on ? 'Working class turned on.' : 'Working class turned off. Each page now has its own class selector.');
 
   const setChatHistory = async (on) => {
-    const done = await setPreference('chatHistory', on, on ? 'Chat history turned on.' : 'Chat history turned off. Your saved chats were deleted.');
-    if (done) queryClient.removeQueries({ queryKey: ['assistant-chats'] }); // the server deleted them; forget the list here too
+    const done = await setPreference('chatHistory', on, on ? 'Chat history turned on.' : 'Chat history turned off. Your saved chats are kept.');
+    if (done) queryClient.removeQueries({ queryKey: ['assistant-chats'] }); // read the list again the next time the Chat page shows it
   };
 
   const isAdmin = user?.role === 'ADMIN';
@@ -127,7 +127,7 @@ export default function SettingsPage() {
           description={chatHistory ? (
             <>On: your chats with the assistant are saved to your account, so the history is there on any device or browser you sign in on. You can delete a chat from the Chat page.</>
           ) : (
-            <>Off: nothing is saved. A conversation is gone as soon as you leave the Chat page. Turning this off also deletes the chats already saved to your account.</>
+            <>Off: new conversations are not saved, and one is gone as soon as you leave the Chat page. The chats you already saved are kept and come back when you turn this on again. To remove one, delete it from the Chat page.</>
           )}
         />
       </section>
